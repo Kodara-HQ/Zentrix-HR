@@ -16,13 +16,19 @@ export function signToken(userId: string) {
   return jwt.sign({ sub: userId }, secret(), { expiresIn: `${HOURS}h` })
 }
 
-export function setAuthCookie(res: Response, userId: string) {
-  res.cookie('token', signToken(userId), {
+export function authCookieOptions() {
+  const production = process.env.NODE_ENV === 'production'
+  return {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: production ? 'none' as const : 'lax' as const,
+    secure: production,
+    path: '/',
     maxAge: HOURS * 60 * 60 * 1000,
-  })
+  }
+}
+
+export function setAuthCookie(res: Response, userId: string) {
+  res.cookie('token', signToken(userId), authCookieOptions())
 }
 
 export async function hashPassword(password: string) {

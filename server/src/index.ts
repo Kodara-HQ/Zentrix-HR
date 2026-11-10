@@ -18,35 +18,36 @@ execSync('npx prisma db push --skip-generate --accept-data-loss', {
 const { prisma } = await import('./lib/prisma.js')
 const { hashPassword } = await import('./lib/auth.js')
 
-// TEMPORARY USER PASSWORD RESET
-const resetEmail = process.env.RESET_USER_EMAIL
-const resetPassword = process.env.RESET_USER_PASSWORD
-
-if (resetEmail && resetPassword) {
-  const user = await prisma.user.findFirst({
-    where: {
-      email: {
-        equals: resetEmail,
-        mode: 'insensitive',
-      },
+const adminEmail = 'lamadeku.emmanuel@gmail.com'
+const adminPasswordHash = await hashPassword('Admin@123456')
+const admin = await prisma.user.findFirst({
+  where: { email: { equals: adminEmail, mode: 'insensitive' } },
+})
+if (admin) {
+  await prisma.user.update({
+    where: { id: admin.id },
+    data: {
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
+      role: 'SUPER_ADMIN',
+      isActive: true,
+      mustChangePassword: false,
     },
   })
-
-  if (user) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordHash: await hashPassword(resetPassword),
-        isActive: true,
-        mustChangePassword: true,
-      },
-    })
-
-    console.log('User password reset successfully.')
-  } else {
-    console.log('Password reset user not found.')
-  }
+} else {
+  await prisma.user.create({
+    data: {
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
+      role: 'SUPER_ADMIN',
+      firstName: 'Emmanuel',
+      lastName: 'Lamadeku',
+      isActive: true,
+      mustChangePassword: false,
+    },
+  })
 }
+console.log('Super admin sign-in is ready.')
 
 const { createApp } = await import('./app.js')
 const { runReminders } = await import('./jobs/reminders.js')

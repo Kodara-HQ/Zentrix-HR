@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 import { asyncHandler, HttpError, parseBody } from '../lib/http.js'
-import { hashPassword, setAuthCookie, verifyPassword } from '../lib/auth.js'
+import { authCookieOptions, hashPassword, setAuthCookie, verifyPassword } from '../lib/auth.js'
 import { requireUser } from '../lib/access.js'
 import { audit } from '../lib/audit.js'
 
@@ -43,7 +43,8 @@ router.post('/login', asyncHandler(async (req, res) => {
 }))
 
 router.post('/logout', (_req, res) => {
-  res.clearCookie('token')
+  const { maxAge: _maxAge, ...cookie } = authCookieOptions()
+  res.clearCookie('token', cookie)
   res.json({ ok: true })
 })
 
