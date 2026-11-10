@@ -355,6 +355,20 @@ router.patch('/users/:id', admin, asyncHandler(async (req, res) => {
   res.json(updated)
 }))
 
+router.delete('/users/:id', admin, asyncHandler(async (req, res) => {
+  const actor = requireUser(req)
+  const target = await prisma.user.findUnique({ where: { id: String(req.params.id) } })
+  if (!target) throw new HttpError(404, 'Record not found.')
+  if (target.id === actor.id) throw new HttpError(400, 'You cannot delete the account you are signed in with.')
+  if (target.role === 'SUPER_ADMIN') {
+    const remaining = await prisma.user.count({ where: { role: 'SUPER_ADMIN', isActive: true, id: { not: target.id } } })
+    if (remaining === 0) throw new HttpError(400, 'Keep at least one active super administrator.')
+  }
+  await prisma.user.delete({ where: { id: target.id } })
+  await audit(req, 'DELETE', 'User', target.id, `Deleted user ${target.username || target.email || target.firstName}`)
+  res.status(204).end()
+}))
+
 router.get('/audit', admin, asyncHandler(async (req, res) => {
   const { page, pageSize, skip } = pageParams(req)
   const [items, total] = await Promise.all([

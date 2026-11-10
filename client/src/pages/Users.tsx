@@ -63,6 +63,7 @@ export function UsersPage() {
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [selected, setSelected] = useState<Account | null>(null)
   const [confirmOff, setConfirmOff] = useState<Account | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Account | null>(null)
 
   async function load() {
     setRows(await api<Account[]>('/settings/users'))
@@ -159,6 +160,9 @@ export function UsersPage() {
                           {account.isActive ? 'Deactivate' : 'Activate'}
                         </button>
                       )}
+                      {account.id !== user.id && (
+                        <button className="text-[#9f2d2d]" onClick={() => setConfirmDelete(account)}>Delete</button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -212,6 +216,25 @@ export function UsersPage() {
             </div>
           </form>
         </Dialog>
+      )}
+
+      {confirmDelete && (
+        <Confirm
+          title="Delete account"
+          message={`${personName(confirmDelete)} will be removed from user management. Their employee record, if they have one, stays on file.`}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={async () => {
+            try {
+              await api(`/settings/users/${confirmDelete.id}`, { method: 'DELETE' })
+              setMessage(`${personName(confirmDelete)} was deleted.`)
+              setConfirmDelete(null)
+              await load()
+            } catch (err) {
+              setConfirmDelete(null)
+              setError(err instanceof Error ? err.message : 'The account could not be deleted.')
+            }
+          }}
+        />
       )}
 
       {confirmOff && (
