@@ -13,7 +13,7 @@ type Slip = { id: string; netPay: string; grossPay: string; paye: string; payrol
 export function PayrollPage() {
   const { user } = useAuth()
   const lookups = useLookups()
-  const officer = can(user?.role, ['PAYROLL_OFFICER', 'HR_MANAGER'])
+  const officer = can(user?.role, ['HR_ADMIN', 'PAYROLL_OFFICER', 'HR_MANAGER'])
   const [runs, setRuns] = useState<Run[]>([])
   const [mine, setMine] = useState<Slip[]>([])
   const [open, setOpen] = useState('')
@@ -28,7 +28,7 @@ export function PayrollPage() {
 
   return (
     <div>
-      <PageHeader title={officer ? 'Payroll' : 'My payslips'} text={officer ? 'Monthly pay uses the statutory rates in force for that month, including Ghana PAYE and the SSNIT split.' : 'Payslips appear here after payroll has been approved.'}>
+      <PageHeader title={officer ? 'Payroll' : 'My payslips'} text={officer ? 'Each month is generated on its own. A bonus or deduction is added to that month and the payslip is recalculated.' : 'Payslips appear here after payroll has been approved.'}>
         {officer && <Button onClick={() => setOpen('run')}>Process month</Button>}
         {officer && <Button tone="ghost" onClick={() => setOpen('adjustment')}>Bonus or deduction</Button>}
         {officer && <Button tone="ghost" onClick={() => setOpen('loan')}>Loan or advance</Button>}
@@ -44,7 +44,7 @@ export function PayrollPage() {
             <Badge tone={statusTone(run.status)}>{titleCase(run.status)}</Badge>,
             <span className="flex gap-2">
               <Button small tone="ghost" onClick={async () => setDetail(await api(`/payroll/runs/${run.id}`))}>Open</Button>
-              {run.status === 'PENDING_APPROVAL' && can(user?.role, ['HR_MANAGER']) && <Button small onClick={async () => { await api(`/payroll/runs/${run.id}/decision`, { method: 'POST', body: { decision: 'APPROVED' } }); await load() }}>Approve</Button>}
+              {run.status === 'PENDING_APPROVAL' && can(user?.role, ['HR_ADMIN', 'HR_MANAGER']) && <Button small onClick={async () => { await api(`/payroll/runs/${run.id}/decision`, { method: 'POST', body: { decision: 'APPROVED' } }); await load() }}>Approve</Button>}
             </span>,
           ])} />
         </Panel>

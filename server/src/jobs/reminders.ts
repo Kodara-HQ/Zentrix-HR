@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma.js'
 import { notify, usersByRoles } from '../lib/notify.js'
 import { addDays, todayUtc } from '../lib/http.js'
 import { fullName } from '../lib/employees.js'
+import { ensureCurrentMonthPayroll } from '../routes/payroll.js'
 
 export async function runReminders() {
   const today = todayUtc()
@@ -158,4 +159,6 @@ export async function runReminders() {
       },
     })
   }
+
+  await ensureCurrentMonthPayroll()
 }

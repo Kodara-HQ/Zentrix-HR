@@ -165,8 +165,9 @@ router.post('/', writers, asyncHandler(async (req, res) => {
     issuedOn: hireDate,
     uploadedById: req.user?.id,
     paragraphs: [
-      `This confirms your appointment as ${employee.jobTitle.name} in the ${employee.department.name} department, based at ${employee.location.name}, ${employee.location.city}.`,
-      `Your employment begins on ${hireDate.toISOString().slice(0, 10)} with employee number ${employee.employeeNo}.`,
+      `I am pleased to confirm your appointment with Galen Corporation. The particulars of this appointment are set out below.`,
+      `You will serve as ${employee.jobTitle.name} in the ${employee.department.name} department, based at ${employee.location.name}, ${employee.location.city}. Your employment begins on ${hireDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}, and your employee number is ${employee.employeeNo}.`,
+      `Please contact Human Resources if you need anything before your first day. We look forward to working with you.`,
     ],
   })
   let temporaryPassword: string | undefined
@@ -457,7 +458,7 @@ nested('employeeBankAccount', z.object({
   isPrimary: z.boolean().default(true),
 }))
 
-router.post('/:id/pay-items', requireRoles('PAYROLL_OFFICER', 'HR_MANAGER'), asyncHandler(async (req, res) => {
+router.post('/:id/pay-items', requireRoles('HR_ADMIN', 'PAYROLL_OFFICER', 'HR_MANAGER'), asyncHandler(async (req, res) => {
   const body = parseBody(z.object({
     componentId: z.string(),
     amount: z.coerce.number(),
@@ -471,7 +472,7 @@ router.post('/:id/pay-items', requireRoles('PAYROLL_OFFICER', 'HR_MANAGER'), asy
   res.status(201).json(item)
 }))
 
-router.delete('/:id/pay-items/:itemId', requireRoles('PAYROLL_OFFICER', 'HR_MANAGER'), asyncHandler(async (req, res) => {
+router.delete('/:id/pay-items/:itemId', requireRoles('HR_ADMIN', 'PAYROLL_OFFICER', 'HR_MANAGER'), asyncHandler(async (req, res) => {
   await prisma.employeePayItem.delete({ where: { id: String(req.params.itemId) } })
   res.status(204).end()
 }))

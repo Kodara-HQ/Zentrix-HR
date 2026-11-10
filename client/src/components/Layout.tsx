@@ -15,7 +15,7 @@ const items = [
   { to: '/recruitment', label: 'Recruitment', icon: Briefcase, roles: ['HR_ADMIN', 'HR_MANAGER', 'RECRUITMENT_OFFICER', 'DEPARTMENT_MANAGER'] },
   { to: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: ['HR_ADMIN', 'HR_MANAGER', 'DEPARTMENT_MANAGER', 'SUPERVISOR'] },
   { to: '/leave', label: 'Leave Management', icon: CalendarDays, roles: ['HR_ADMIN', 'HR_MANAGER', 'DEPARTMENT_MANAGER', 'SUPERVISOR'] },
-  { to: '/payroll', label: 'Payroll', icon: Wallet, roles: ['HR_MANAGER', 'PAYROLL_OFFICER'] },
+  { to: '/payroll', label: 'Payroll', icon: Wallet, roles: ['HR_ADMIN', 'HR_MANAGER', 'PAYROLL_OFFICER'] },
   { to: '/performance', label: 'Performance', icon: ChartColumn, roles: ['HR_ADMIN', 'HR_MANAGER', 'DEPARTMENT_MANAGER', 'SUPERVISOR'] },
   { to: '/training', label: 'Training', icon: GraduationCap, roles: ['HR_ADMIN', 'HR_MANAGER', 'DEPARTMENT_MANAGER', 'SUPERVISOR'] },
   { to: '/relations', label: 'Employee Relations', icon: Scale, roles: ['HR_ADMIN', 'HR_MANAGER'] },

@@ -129,9 +129,9 @@ export function renderLeaveForm(input: {
   })
 }
 
-export function renderPdf(build: (doc: PDFKit.PDFDocument) => void) {
+export function renderPdf(build: (doc: PDFKit.PDFDocument) => void, margin = 56) {
   return new Promise<Buffer>((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 56, size: 'A4' })
+    const doc = new PDFDocument({ margin, size: 'A4' })
     const chunks: Buffer[] = []
     doc.on('data', (chunk: Buffer) => chunks.push(chunk))
     doc.on('end', () => resolve(Buffer.concat(chunks)))
@@ -256,6 +256,76 @@ export function renderReportPdf(
   })
 }
 
+function longDate(value: Date) {
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  return `${value.getUTCDate()} ${months[value.getUTCMonth()]} ${value.getUTCFullYear()}`
+}
+
+function drawLetter(doc: PDFKit.PDFDocument, input: {
+  company: { name: string; legalName?: string | null; phone?: string | null; email?: string | null; city?: string | null; country?: string | null }
+  employee: { firstName: string; middleName?: string | null; lastName: string; employeeNo: string; dateOfEmployment: Date; jobTitle?: { name: string } | null; department?: { name: string } | null; location?: { name: string; city: string } | null }
+  subject: string
+  paragraphs: string[]
+  issuedOn: Date
+  appointment: boolean
+}) {
+  const left = 52
+  const width = doc.page.width - left * 2
+  doc.page.margins.bottom = 0
+  doc.rect(0, 0, doc.page.width, 88).fill('#1a3c34')
+  doc.rect(0, 88, doc.page.width, 4).fill('#c4a574')
+  doc.roundedRect(left, 24, 36, 36, 6).fill('#c4622d')
+  doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(18).text('G', left, 33, { width: 36, align: 'center', lineBreak: false })
+  doc.fillColor('#c4a574').font('Helvetica').fontSize(8).text('HUMAN RESOURCES', left + 48, 26, { lineBreak: false })
+  doc.fillColor('#f6f1e8').font('Helvetica-Bold').fontSize(16).text(input.company.name, left + 48, 38, { width: width - 160, lineBreak: false })
+  doc.font('Helvetica').fontSize(10).text(input.subject, left + 48, 60, { width: width - 190, lineBreak: false })
+  doc.fillColor('#c4a574').font('Helvetica').fontSize(9).text(longDate(input.issuedOn), left, 60, { width, align: 'right', lineBreak: false })
+
+  let y = 112
+  doc.fillColor('#24312c').font('Helvetica').fontSize(10.5)
+  doc.text(`Dear ${fullName(input.employee)},`, left, y, { width, lineGap: 1 })
+  y = doc.y + 8
+  for (const paragraph of input.paragraphs) {
+    doc.text(paragraph, left, y, { width, align: 'justify', lineGap: 1 })
+    y = doc.y + 8
+  }
+
+  if (input.appointment) {
+    y += 2
+    doc.fillColor('#1a3c34').font('Helvetica-Bold').fontSize(11).text('Particulars of appointment', left, y, { lineBreak: false })
+    y += 16
+    const station = [input.employee.location?.name, input.employee.location?.city].filter(Boolean).join(', ')
+    const rows = [
+      ['Position', input.employee.jobTitle?.name || '—'],
+      ['Department', input.employee.department?.name || '—'],
+      ['Duty station', station || '—'],
+      ['Employee number', input.employee.employeeNo],
+      ['Commencement', longDate(input.employee.dateOfEmployment)],
+    ]
+    const top = y
+    rows.forEach((row, index) => {
+      if (index % 2 === 0) doc.rect(left, y, width, 20).fill('#f6f1e8')
+      doc.fillColor('#6e675e').font('Helvetica').fontSize(8).text(row[0].toUpperCase(), left + 10, y + 6, { width: 130, lineBreak: false })
+      doc.fillColor('#1a3c34').font('Helvetica-Bold').fontSize(10).text(row[1], left + 148, y + 5, { width: width - 166, lineBreak: false })
+      y += 20
+    })
+    doc.rect(left, top, width, rows.length * 20).lineWidth(0.6).strokeColor('#e6dfd4').stroke()
+  }
+
+  y += 18
+  doc.fillColor('#24312c').font('Helvetica').fontSize(10.5).text('Yours faithfully,', left, y, { lineBreak: false })
+  y += 32
+  doc.moveTo(left, y).lineTo(left + 180, y).lineWidth(1).strokeColor('#c4a574').stroke()
+  y += 8
+  doc.font('Helvetica-Bold').fontSize(10.5).fillColor('#1a3c34').text('Human Resources', left, y, { lineBreak: false })
+  y += 13
+  doc.font('Helvetica').fontSize(9).fillColor('#6e675e').text(input.company.name, left, y, { lineBreak: false })
+
+  doc.rect(0, doc.page.height - 28, doc.page.width, 28).fill('#1a3c34')
+  const contact = [input.company.phone, input.company.email, [input.company.city, input.company.country].filter(Boolean).join(', ')].filter(Boolean).join('   ·   ')
+  doc.fillColor('#c4a574').font('Helvetica').fontSize(8).text(contact || input.company.name, left, doc.page.height - 18, { width, align: 'center', lineBreak: false })
+}
+
 export async function issueLetter(input: {
   employeeId: string
   type: LetterType
@@ -272,20 +342,14 @@ export async function issueLetter(input: {
     prisma.company.findFirst(),
   ])
   if (!employee || !company) return null
-  const buffer = await renderPdf((doc) => {
-    doc.fillColor('#0b1f33').fontSize(18).text(company.legalName)
-    doc.moveDown(0.2).fontSize(10).fillColor('#526173').text(company.address || '')
-    doc.text([company.city, company.country].filter(Boolean).join(', '))
-    doc.moveDown(1.2).fillColor('#0b1f33').fontSize(14).text(input.subject)
-    doc.moveDown(0.6).fontSize(11).text(`Date: ${input.issuedOn.toISOString().slice(0, 10)}`)
-    doc.moveDown(0.8).text(`Dear ${fullName(employee)},`)
-    for (const paragraph of input.paragraphs) {
-      doc.moveDown(0.7).text(paragraph, { align: 'justify' })
-    }
-    doc.moveDown(1.4).text('Yours faithfully,')
-    doc.moveDown(1.2).text('Human Resources')
-    doc.fontSize(10).fillColor('#526173').text(company.name)
-  })
+  const buffer = await renderPdf((doc) => drawLetter(doc, {
+    company,
+    employee,
+    subject: input.subject,
+    paragraphs: input.paragraphs,
+    issuedOn: input.issuedOn,
+    appointment: input.type === 'APPOINTMENT',
+  }), 0)
   const fileId = randomUUID()
   const storageKey = `letters/${fileId}.pdf`
   await saveBuffer(storageKey, buffer, 'application/pdf')

@@ -605,6 +605,7 @@ router.get('/files/:id', asyncHandler(async (req, res) => {
   }
   const contents = await readStored(file.storageKey)
   res.setHeader('Content-Type', file.mimeType)
+  res.setHeader('Cache-Control', 'no-store')
   res.setHeader('Content-Disposition', `inline; filename="${file.fileName.replace(/"/g, '')}"`)
   res.send(contents)
 }))
