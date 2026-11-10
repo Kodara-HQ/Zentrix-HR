@@ -1,0 +1,18 @@
+{
+  "name": "hris",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Human Resource Information System",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "setup": "npm install && npm run generate -w server",
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "verify": "npm run test:payroll -w server && npm run verify -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
