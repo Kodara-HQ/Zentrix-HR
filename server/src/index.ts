@@ -21,7 +21,7 @@ const { hashPassword } = await import('./lib/auth.js')
 
 const resetEmail = process.env.RESET_USER_EMAIL
 const resetPassword = process.env.RESET_USER_PASSWORD
-if (resetEmail && resetPassword) {
+if (resetEmail && resetPassword && resetEmail.toLowerCase() !== 'ellen@galen.com') {
   const passwordHash = await hashPassword(resetPassword)
   const existing = await prisma.user.findFirst({
     where: { email: { equals: resetEmail, mode: 'insensitive' } },
@@ -46,6 +46,23 @@ if (resetEmail && resetPassword) {
     })
   }
   console.log('Sign-in password was reset.')
+}
+
+const ellen = await prisma.user.findFirst({
+  where: { email: { equals: 'ellen@galen.com', mode: 'insensitive' } },
+})
+if (ellen) {
+  await prisma.user.update({
+    where: { id: ellen.id },
+    data: {
+      firstName: 'Ellen',
+      lastName: 'Gyasi',
+      role: 'HR_ADMIN',
+      passwordHash: await hashPassword('@Galen.com'),
+      isActive: true,
+      mustChangePassword: false,
+    },
+  })
 }
 
 const { createApp } = await import('./app.js')
