@@ -1,7 +1,15 @@
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL || '/api'
-).replace(/\/$/, '')
+let sessionEpoch = 0
+
+export function bumpSession() {
+  sessionEpoch += 1
+}
+
+export function sessionStamp() {
+  return sessionEpoch
+}
+
+const API_BASE_URL = '/api'
 
 export class ApiError extends Error {
   details?: unknown
@@ -30,6 +38,7 @@ export async function api<T>(
     body = JSON.stringify(options.body)
   }
 
+  const stamp = sessionEpoch
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: options.method || 'GET',
     credentials: 'include',
@@ -39,6 +48,7 @@ export async function api<T>(
 
   if (
     response.status === 401 &&
+    stamp === sessionEpoch &&
     !path.startsWith('/auth/login') &&
     !path.startsWith('/auth/demo')
   ) {

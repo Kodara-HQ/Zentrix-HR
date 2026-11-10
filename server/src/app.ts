@@ -49,6 +49,10 @@ export function createApp() {
   }))
   app.use(express.json({ limit: '12mb' }))
   app.use(cookieParser())
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store')
+    next()
+  })
   app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false }))
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true, service: 'hris' })

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { api } from './lib/api'
+import { api, bumpSession, sessionStamp } from './lib/api'
 
 export type SessionUser = {
   id: string
@@ -27,10 +27,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   async function refresh() {
+    const stamp = sessionStamp()
     try {
-      setUser(await api<SessionUser>('/auth/me'))
+      const next = await api<SessionUser>('/auth/me')
+      if (stamp === sessionStamp()) setUser(next)
     } catch {
-      setUser(null)
+      if (stamp === sessionStamp()) setUser(null)
     }
   }
 
@@ -49,13 +51,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
+    bumpSession()
     const next = await api<SessionUser>('/auth/login', { method: 'POST', body: { email, password } })
     setUser(next)
   }
 
   async function logout() {
-    await api('/auth/logout', { method: 'POST' })
-    setUser(null)
+    bumpSession()
+    try {
+      await api('/auth/logout', { method: 'POST' })
+    } finally {
+      setUser(null)
+    }
   }
 
   return <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>{children}</AuthContext.Provider>
