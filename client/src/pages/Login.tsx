@@ -13,46 +13,19 @@ export function LoginPage() {
 
   if (user) return <Navigate to="/" replace />
 
-  const issues = [
-    'Approvals sitting with a manager or with HR',
-    'Payroll, PAYE, and SSNIT on one employee record',
-    'Contracts, probation, and certificates nearing their dates',
-    'Attendance, leave, and overtime that do not agree',
-    'Open grievances and disciplinary cases',
-  ]
-
   return (
-    <div className="flex min-h-screen flex-col bg-[#f6f1e8] lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(400px,0.85fr)]">
-      <section className="order-2 flex flex-col justify-between px-6 py-8 sm:px-12 lg:order-1 lg:px-16 lg:py-12">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-md bg-[#1a3c34] text-lg font-bold text-[#f6f1e8]">G</span>
-            <div>
-              <div className="text-sm font-semibold text-[#1a3c34]">Galen Corporation</div>
-              <div className="text-[11px] font-semibold tracking-[0.18em] text-[#c4a574]">ACCRA</div>
-            </div>
-          </div>
-          <h1 className="mt-10 max-w-xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#1a3c34] sm:text-5xl">The record, the approval, and the payroll figure.</h1>
-          <p className="mt-5 max-w-xl text-[#4a524c]">Recruitment, attendance, leave, Ghana PAYE and SSNIT, performance, contracts, and workforce plans share the same employee record.</p>
-          <div className="mt-8">
-            <div className="text-xs font-semibold tracking-[0.16em] text-[#c4a574]">KEY ISSUES</div>
-            <ul className="mt-4 grid max-w-xl gap-2 sm:grid-cols-2">
-              {issues.map((issue) => (
-                <li key={issue} className="rounded-xl border border-[#e6dfd4] bg-[#fffcf8] px-3 py-3 text-sm text-[#24312c]">
-                  <span className="mb-2 block h-0.5 w-6 bg-[#c4622d]" />
-                  {issue}
-                </li>
-              ))}
-            </ul>
+    <div className="grid min-h-screen place-items-center bg-[#f6f1e8] px-4 py-10">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex items-center justify-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-md bg-[#1a3c34] text-lg font-bold text-[#f6f1e8]">G</span>
+          <div>
+            <div className="text-sm font-semibold text-[#1a3c34]">Galen Corporation</div>
+            <div className="text-[11px] font-semibold tracking-[0.18em] text-[#c4a574]">HUMAN RESOURCES</div>
           </div>
         </div>
-        <p className="mt-10 text-xs font-semibold tracking-[0.16em] text-[#c4a574]">AIRPORT CITY · TEMA · KUMASI</p>
-      </section>
-      <section className="order-1 flex items-center bg-[#1a3c34] px-6 py-10 sm:px-10 lg:order-2 lg:px-12">
-        <div className="mx-auto w-full max-w-md rounded-2xl bg-[#fffcf8] p-7 shadow-2xl">
-          <div className="text-xs font-semibold tracking-[0.18em] text-[#c4a574]">HUMAN RESOURCES</div>
-          <h2 className="mt-3 text-2xl font-semibold text-[#1a3c34]">Sign in</h2>
-          <p className="mt-1 text-sm text-[#6e675e]">Use your username or work email. Access follows your role and department.</p>
+        <div className="rounded-2xl border border-[#e6dfd4] bg-[#fffcf8] p-7 shadow-sm">
+          <h1 className="text-2xl font-semibold text-[#1a3c34]">Sign in</h1>
+          <p className="mt-1 text-sm text-[#6e675e]">Use your username or work email.</p>
           <form
             className="mt-6 space-y-4"
             onSubmit={async (event) => {
@@ -76,9 +49,8 @@ export function LoginPage() {
               <Button type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</Button>
             </div>
           </form>
-          <p className="mt-6 border-t border-[#e6dfd4] pt-4 text-sm leading-snug text-[#1a3c34]">One employee record, from the offer letter through the final payslip.</p>
         </div>
-      </section>
+      </div>
     </div>
   )
 }
