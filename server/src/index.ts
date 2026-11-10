@@ -1,19 +1,20 @@
 
 import 'dotenv/config'
-import { execSync } from 'node:child_process'
+import { exec, execSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { ensureDatabase, stopDatabase } from './db/ensure.js'
+
+const hosted = Boolean(process.env.DATABASE_URL && !/localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL))
 
 await ensureDatabase()
 
-execSync('npx prisma generate', {
-  stdio: 'inherit',
-  env: process.env,
-})
-
-execSync('npx prisma db push --skip-generate --accept-data-loss', {
-  stdio: 'inherit',
-  env: process.env,
-})
+const clientReady = ['node_modules/.prisma/client/index.js', '../node_modules/.prisma/client/index.js'].some((file) => existsSync(file))
+if (!hosted || !clientReady) {
+  execSync('npx prisma generate', { stdio: 'inherit', env: process.env })
+}
+if (!hosted) {
+  execSync('npx prisma db push --skip-generate --accept-data-loss', { stdio: 'inherit', env: process.env })
+}
 
 const { prisma } = await import('./lib/prisma.js')
 const { hashPassword } = await import('./lib/auth.js')
@@ -50,14 +51,23 @@ if (resetEmail && resetPassword) {
 const { createApp } = await import('./app.js')
 const { runReminders } = await import('./jobs/reminders.js')
 
-await runReminders().catch((error: unknown) => {
-  console.error('Reminders failed', error)
-})
+function startBackgroundWork() {
+  const reminders = () => runReminders().catch((error: unknown) => console.error('Reminders failed', error))
+  if (!hosted) {
+    reminders()
+    return
+  }
+  exec('npx prisma db push --skip-generate --accept-data-loss', { env: process.env }, (error) => {
+    if (error) console.error('Schema update failed', error)
+    reminders()
+  })
+}
 
 const port = Number(process.env.PORT || 4000)
 
 const server = createApp().listen(port, () => {
   console.log(`HRIS API listening on http://localhost:${port}`)
+  startBackgroundWork()
 })
 
 setInterval(() => {

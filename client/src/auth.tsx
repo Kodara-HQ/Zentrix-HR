@@ -35,10 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    refresh().finally(() => setLoading(false))
+    const slow = window.setTimeout(() => setLoading(false), 4000)
+    refresh().finally(() => {
+      window.clearTimeout(slow)
+      setLoading(false)
+    })
     const onUnauthorized = () => setUser(null)
     window.addEventListener('hris-unauthorized', onUnauthorized)
-    return () => window.removeEventListener('hris-unauthorized', onUnauthorized)
+    return () => {
+      window.clearTimeout(slow)
+      window.removeEventListener('hris-unauthorized', onUnauthorized)
+    }
   }, [])
 
   async function login(email: string, password: string) {

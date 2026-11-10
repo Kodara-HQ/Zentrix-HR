@@ -5,8 +5,12 @@ import EmbeddedPostgres from 'embedded-postgres'
 
 const embeddedPort = 54330
 
-async function canConnect(connectionString: string) {
-  const client = new pg.Client({ connectionString, connectionTimeoutMillis: 3000, query_timeout: 3000 })
+function isHosted(connectionString: string) {
+  return !/localhost|127\.0\.0\.1/.test(connectionString)
+}
+
+async function canConnect(connectionString: string, timeout: number) {
+  const client = new pg.Client({ connectionString, connectionTimeoutMillis: timeout, query_timeout: timeout })
   try {
     await client.connect()
     await client.query('select 1')
@@ -22,7 +26,14 @@ let instance: EmbeddedPostgres | null = null
 
 export async function ensureDatabase() {
   const url = process.env.DATABASE_URL
-  if (url && (await canConnect(url))) return
+  if (url) {
+    const hosted = isHosted(url)
+    const attempts = hosted ? 3 : 1
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      if (await canConnect(url, hosted ? 5000 : 3000)) return
+    }
+    if (hosted) throw new Error('Cannot reach DATABASE_URL and embedded PostgreSQL is disabled.')
+  }
 
   if (process.env.USE_EMBEDDED_POSTGRES !== 'true') {
     throw new Error('Cannot reach DATABASE_URL and embedded PostgreSQL is disabled.')
@@ -48,7 +59,7 @@ export async function ensureDatabase() {
   }
   process.env.DATABASE_URL = `postgresql://hris:hris@127.0.0.1:${embeddedPort}/hris?schema=public`
   instance = embedded
-  const ready = await canConnect(process.env.DATABASE_URL)
+  const ready = await canConnect(process.env.DATABASE_URL, 3000)
   if (!ready) throw new Error('Embedded PostgreSQL started but the database is not accepting connections.')
 }
 
