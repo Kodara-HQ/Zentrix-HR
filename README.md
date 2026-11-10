@@ -1,41 +1,39 @@
-# Meridian HRIS
+# Galen Corporation HRIS
 
-Human resource information system for the full employee lifecycle: records, recruitment, attendance, leave, Ghana payroll, performance, training, relations, welfare, contracts, workforce planning, and exits.
+Human resources system for Galen Corporation. HR runs the company record. Employees use the Employee Self Service portal (ESS) for their own profile, attendance, leave, and payslips.
 
 ## Run
 
 ```bash
 npm install
+copy server\.env.example server\.env
 npm run dev
 ```
 
-The API starts an embedded PostgreSQL database on port 54329 the first time, creates the schema, and loads Meridian Logistics Ghana Limited. The web app is at [http://localhost:5173](http://localhost:5173). The API is at [http://localhost:4000](http://localhost:4000).
+On macOS or Linux, use `cp server/.env.example server/.env`.
 
-To use your own PostgreSQL server, set `USE_EMBEDDED_POSTGRES=false` and `DATABASE_URL` in `server/.env`, then run `npm run dev`.
+The API starts an embedded PostgreSQL database on port 54330, applies the schema, and listens on [http://localhost:4000](http://localhost:4000). The web app is at [http://localhost:5173](http://localhost:5173). Set a long `JWT_SECRET` in `server/.env` before anyone signs in.
 
-## Sample sign-in
+To use your own PostgreSQL server, set `USE_EMBEDDED_POSTGRES=false` and point `DATABASE_URL` at that server.
 
-Password for every sample account: `Hris@2026`
+The database is not filled with sample staff. The first sign-in has to be created in the database or through a user you already have. New employees get an ESS sign-in only when HR ticks **Create login**. The temporary password is shown once on that screen, and the employee must change it at the first sign-in.
 
-| Person | Role | Email |
-| --- | --- | --- |
-| Efua Boateng | Super administrator | efua.boateng@meridian.gh |
-| Akosua Darko | HR administrator | akosua.darko@meridian.gh |
-| Kojo Mensah | HR manager | kojo.mensah@meridian.gh |
-| Kofi Asante | Department manager | kofi.asante@meridian.gh |
-| Ama Adjei | Supervisor | ama.adjei@meridian.gh |
-| Yaw Owusu | Payroll officer | yaw.owusu@meridian.gh |
-| Abena Sarpong | Recruitment officer | abena.sarpong@meridian.gh |
-| Kwame Boateng | Employee | kwame.boateng@meridian.gh |
+## What each person sees
+
+HR, managers, and payroll see the modules their role allows: employees, recruitment, attendance, leave, payroll, performance, training, relations, welfare, contracts, workforce planning, exits, reports, and settings.
+
+An employee sees ESS only: home, profile, attendance, leave, payslips, notifications, and account settings.
+
+## Attendance
+
+Attendance comes from the fingerprint clock. The device posts to `POST /api/time/biometric/punch` with the employee number and the punch time. The first punch of the day is clock-in. A later punch updates clock-out. The device key must match `BIOMETRIC_DEVICE_KEY` in `server/.env`. The system administrator can read the clock address under **System settings → Working hours**.
+
+Reporting time, closing time, and grace minutes are set there. A punch after the grace period is late.
 
 ## Payroll
 
-Monthly PAYE uses the Ghana Revenue Authority bands effective 1 September 2026. Chargeable income is gross taxable pay minus the employee SSNIT contribution of 5.5% of basic salary. The employer pays 13% of basic salary: 8% toward Tier 1 and 5% toward Tier 2. Rates are stored with effective dates and can be replaced from System Settings without rewriting old payslips.
+Each month is generated on its own when that month has not already been run. Ghana PAYE uses the bands effective 1 September 2026. Employee SSNIT is 5.5% of basic salary. Employer SSNIT is 13% of basic salary, of which 5% is Tier 2. A bonus, allowance, commission, deduction, or loan is applied to that month and the payslip is recalculated. Employees can download an approved payslip from ESS.
 
-## Biometric attendance
+## Documents
 
-`POST /api/time/biometric/punch` with `{ "deviceKey": "device-demo-key", "employeeNo": "EMP-0010", "timestamp": "2026-11-09T08:05:00.000Z" }`.
-
-## Documents and backup
-
-Uploads stay on the server unless `S3_BUCKET` and credentials are set in `server/.env`. A super administrator can write a JSON snapshot from System Settings. A full database copy is `pg_dump` of `DATABASE_URL`.
+Appointment letters and payslips are PDFs. Uploaded files stay in `server/uploads` unless `S3_BUCKET` and its credentials are set. A super administrator can write a JSON snapshot from **System settings → Backup**. A full database copy is `pg_dump` of `DATABASE_URL`.
