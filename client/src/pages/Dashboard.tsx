@@ -25,9 +25,14 @@ function EmployeeHome() {
   const [profile, setProfile] = useState<{ employeeNo?: string; status?: string; photoFileId?: string; firstName?: string; lastName?: string; department?: { name: string }; jobTitle?: { name: string }; location?: { name: string; city: string } } | null>(null)
 
   useEffect(() => {
-    if (!user?.employeeId) return
-    api(`/employees/${user.employeeId}`).then(setProfile).catch(() => undefined)
-  }, [user?.employeeId])
+  if (!user?.employeeId) return
+
+  api<NonNullable<typeof profile>>(
+    `/employees/${user.employeeId}`
+  )
+    .then(setProfile)
+    .catch(() => undefined)
+}, [user?.employeeId])
 
   return (
     <div>
