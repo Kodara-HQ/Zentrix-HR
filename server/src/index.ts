@@ -29,7 +29,7 @@ if (resetEmail && resetPassword) {
   if (existing) {
     await prisma.user.update({
       where: { id: existing.id },
-      data: { passwordHash, role: 'SUPER_ADMIN', isActive: true, mustChangePassword: false },
+      data: { passwordHash, isActive: true, mustChangePassword: false },
     })
   } else {
     const [firstName, ...rest] = resetEmail.split('@')[0].split('.')
@@ -45,7 +45,7 @@ if (resetEmail && resetPassword) {
       },
     })
   }
-  console.log('Super admin sign-in is ready.')
+  console.log('Sign-in password was reset.')
 }
 
 const { createApp } = await import('./app.js')
