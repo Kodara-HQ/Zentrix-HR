@@ -48,23 +48,6 @@ if (resetEmail && resetPassword && resetEmail.toLowerCase() !== 'ellen@galen.com
   console.log('Sign-in password was reset.')
 }
 
-const ellen = await prisma.user.findFirst({
-  where: { email: { equals: 'ellen@galen.com', mode: 'insensitive' } },
-})
-if (ellen) {
-  await prisma.user.update({
-    where: { id: ellen.id },
-    data: {
-      firstName: 'Ellen',
-      lastName: 'Gyasi',
-      role: 'HR_ADMIN',
-      passwordHash: await hashPassword('@Galen.com'),
-      isActive: true,
-      mustChangePassword: false,
-    },
-  })
-}
-
 const { createApp } = await import('./app.js')
 const { runReminders } = await import('./jobs/reminders.js')
 
