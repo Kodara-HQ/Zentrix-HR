@@ -27,7 +27,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   if (!user || !user.isActive || !(await verifyPassword(body.password, user.passwordHash))) {
     throw new HttpError(401, 'Email or password is incorrect.')
   }
-  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => undefined)
   setAuthCookie(res, user.id)
   await audit(req, 'LOGIN', 'User', user.id, `${user.username || user.email} signed in`)
   res.json({
