@@ -11,7 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'hr' => \App\Http\Middleware\HrPortal::class,
+            'role' => \App\Http\Middleware\RequireRole::class,
+        ]);
+        $middleware->redirectGuestsTo('/login');
+        $middleware->redirectUsersTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

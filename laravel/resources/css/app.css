@@ -4,8 +4,24 @@
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source '../../app/Support/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Source Sans 3', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f6f1e8;
+    color: #24312c;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@media print {
+    aside, header, .no-print { display: none !important; }
+    main { padding: 0 !important; }
+    body { background: white; }
 }
