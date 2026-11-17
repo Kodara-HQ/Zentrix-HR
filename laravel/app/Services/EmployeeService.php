@@ -37,10 +37,10 @@ class EmployeeService
         });
     }
 
-    /** Opens this year's leave balances for every leave type that applies to the employee's gender. */
-    public function grantLeaveBalances(Employee $employee): void
+    /** Opens a year's leave balances (this year by default) for every leave type that applies to the employee's gender. */
+    public function grantLeaveBalances(Employee $employee, ?int $year = null): void
     {
-        $year = (int) now()->format('Y');
+        $year ??= (int) now()->format('Y');
         $gender = $employee->gender?->value ?? $employee->gender;
         foreach (LeaveType::all() as $type) {
             $typeGender = $type->gender?->value ?? $type->gender;

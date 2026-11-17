@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\LeaveController;
 use App\Support\Navigation;
 use Illuminate\Support\Facades\Route;
 
@@ -40,9 +41,16 @@ Route::middleware(['auth', 'hr'])->group(function () {
     Route::get('/files/{file}', [FileController::class, 'show'])->name('files.show');
     Route::delete('/files/{file}', [FileController::class, 'destroy'])->name('files.destroy')->middleware('role:HR_ADMIN,HR_MANAGER,RECRUITMENT_OFFICER');
 
+    // Leave (every role applies for their own; managers and HR decide)
+    Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');
+    Route::post('/leave', [LeaveController::class, 'store'])->name('leave.store');
+    Route::get('/leave/form', [LeaveController::class, 'form'])->name('leave.form');
+    Route::post('/leave/{leave}/decision', [LeaveController::class, 'decide'])->name('leave.decide')->middleware('role:SUPERVISOR,DEPARTMENT_MANAGER,HR_ADMIN,HR_MANAGER');
+    Route::post('/leave/{leave}/cancel', [LeaveController::class, 'cancel'])->name('leave.cancel');
+
     // Modules still being moved from the Node/React version show a holding page until their controller lands.
     // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees'];
+    $ported = ['/employees', '/leave'];
     $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
     foreach (Navigation::modules() as $module) {
         if (in_array($module['path'], $ported, true)) {

@@ -108,8 +108,11 @@ class Access
             return true;
         }
 
-        if (str_starts_with($path, '/files/') || $path === '/files') {
-            return true; // FileController checks ownership itself
+        // Sub-pages of the ESS sections and documents; their controllers check ownership themselves.
+        foreach (['/files', '/leave', '/attendance', '/payroll', '/notifications', '/settings'] as $section) {
+            if ($path === $section || str_starts_with($path, $section.'/')) {
+                return true;
+            }
         }
 
         return $employeeId !== null && ($path === "/employees/{$employeeId}" || str_starts_with($path, "/employees/{$employeeId}/"));
