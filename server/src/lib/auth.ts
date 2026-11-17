@@ -9,7 +9,7 @@ const HOURS = 12
 function secret() {
   const value = process.env.JWT_SECRET
   if (value) return value
-  if (process.env.NODE_ENV === 'production') return 'galen-hris-hosted-session'
+  if (process.env.NODE_ENV === 'production') return 'zentrix-hris-hosted-session'
   throw new Error('JWT_SECRET is not set')
 }
 

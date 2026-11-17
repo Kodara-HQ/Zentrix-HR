@@ -1,6 +1,6 @@
-# Galen Corporation HRIS
+# Zentrix Corporation HRIS
 
-Human resources system for Galen Corporation. HR runs the company record. Employees use the Employee Self Service portal (ESS) for their own profile, attendance, leave, and payslips.
+Human resources system for Zentrix Corporation. HR runs the company record. Employees use the Employee Self Service portal (ESS) for their own profile, attendance, leave, and payslips.
 
 ## Run
 

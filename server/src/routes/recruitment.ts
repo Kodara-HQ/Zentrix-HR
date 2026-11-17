@@ -333,7 +333,7 @@ router.post('/offers/:id/accept', requireRoles('RECRUITMENT_OFFICER', 'HR_ADMIN'
     issuedOn: offer.startDate,
     uploadedById: req.user?.id,
     paragraphs: [
-      `I am pleased to confirm your appointment with Galen Corporation, following your application for ${vacancy.title}. The particulars of this appointment are set out below.`,
+      `I am pleased to confirm your appointment with Zentrix Corporation, following your application for ${vacancy.title}. The particulars of this appointment are set out below.`,
       `Please contact Human Resources if you need anything before your first day. We look forward to working with you.`,
     ],
   })
