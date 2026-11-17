@@ -165,7 +165,7 @@ router.post('/', writers, asyncHandler(async (req, res) => {
     issuedOn: hireDate,
     uploadedById: req.user?.id,
     paragraphs: [
-      `I am pleased to confirm your appointment with Zentrix Corporation. The particulars of this appointment are set out below.`,
+      `I am pleased to confirm your appointment with Zentrix HR. The particulars of this appointment are set out below.`,
       `You will serve as ${employee.jobTitle.name} in the ${employee.department.name} department, based at ${employee.location.name}, ${employee.location.city}. Your employment begins on ${hireDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}, and your employee number is ${employee.employeeNo}.`,
       `Please contact Human Resources if you need anything before your first day. We look forward to working with you.`,
     ],

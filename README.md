@@ -1,6 +1,6 @@
-# Zentrix Corporation HRIS
+# Zentrix HR
 
-Human resources system for Zentrix Corporation. HR runs the company record. Employees use the Employee Self Service portal (ESS) for their own profile, attendance, leave, and payslips.
+Human resources system for Zentrix HR. HR runs the company record. Employees use the Employee Self Service portal (ESS) for their own profile, attendance, leave, and payslips.
 
 ## Run
 

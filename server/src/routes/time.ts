@@ -514,7 +514,7 @@ router.get('/leave/form', asyncHandler(async (req, res) => {
     prisma.leaveType.findMany({ orderBy: { name: 'asc' } }),
   ])
   const buffer = await renderLeaveForm({
-    company: company?.name || 'Zentrix Corporation',
+    company: company?.name || 'Zentrix HR',
     employeeNo: employee.employeeNo,
     name: fullName(employee),
     department: employee.department.name,

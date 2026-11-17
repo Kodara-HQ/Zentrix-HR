@@ -425,7 +425,7 @@ router.get('/payslips/:id/pdf', asyncHandler(async (req, res) => {
     doc.roundedRect(left, 22, 36, 36, 6).fill('#c4622d')
     doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(18).text('G', left, 31, { width: 36, align: 'center', lineBreak: false })
     doc.fillColor('#c4a574').font('Helvetica').fontSize(8).text('PAYSLIP', left + 48, 24, { lineBreak: false })
-    doc.fillColor('#f6f1e8').font('Helvetica-Bold').fontSize(16).text(company?.name || 'Zentrix Corporation', left + 48, 38, { width: width * 0.55, lineBreak: false })
+    doc.fillColor('#f6f1e8').font('Helvetica-Bold').fontSize(16).text(company?.name || 'Zentrix HR', left + 48, 38, { width: width * 0.55, lineBreak: false })
     doc.font('Helvetica').fontSize(10).text(periodName, left, 58, { width, align: 'right', lineBreak: false })
 
     doc.rect(left, 108, width, 58).fill('#f6f1e8')
@@ -490,7 +490,7 @@ router.get('/payslips/:id/pdf', asyncHandler(async (req, res) => {
 
     doc.rect(0, doc.page.height - 28, doc.page.width, 28).fill('#1a3c34')
     const contact = [company?.phone, company?.email, company?.country].filter(Boolean).join('   ·   ')
-    doc.fillColor('#c4a574').font('Helvetica').fontSize(8).text(contact || company?.name || 'Zentrix Corporation', left, doc.page.height - 18, { width, align: 'center', lineBreak: false })
+    doc.fillColor('#c4a574').font('Helvetica').fontSize(8).text(contact || company?.name || 'Zentrix HR', left, doc.page.height - 18, { width, align: 'center', lineBreak: false })
   }, 0)
   const period = `${slip.payrollRun.year}-${String(slip.payrollRun.month).padStart(2, '0')}`
   res.setHeader('Content-Type', 'application/pdf')

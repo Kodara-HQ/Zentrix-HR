@@ -24,8 +24,8 @@ export async function seed() {
   const year = new Date().getUTCFullYear()
   const company = await prisma.company.create({
     data: {
-      name: 'Zentrix Corporation',
-      legalName: 'Zentrix Corporation',
+      name: 'Zentrix HR',
+      legalName: 'Zentrix HR',
       tin: 'C0012345678',
       ssnitEmployerNo: 'ER-ML-20418',
       email: 'hr@meridian.gh',
@@ -178,7 +178,7 @@ export async function seed() {
       data: {
         employeeId: employee.id,
         type: 'HIRE',
-        title: 'Joined Zentrix Corporation',
+        title: 'Joined Zentrix HR',
         effectiveDate: person.hired,
         toValue: { employeeNo: person.no, title: person.title },
       },

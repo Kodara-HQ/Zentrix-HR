@@ -47,7 +47,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [mobile, setMobile] = useState(false)
   const [unread, setUnread] = useState(0)
   const [query, setQuery] = useState('')
-  const [company, setCompany] = useState('Zentrix Corporation')
+  const [company, setCompany] = useState('Zentrix HR')
   const staff = user?.role === 'EMPLOYEE'
 
   useEffect(() => {

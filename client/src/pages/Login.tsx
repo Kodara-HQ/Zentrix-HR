@@ -19,7 +19,7 @@ export function LoginPage() {
         <div className="mb-6 flex items-center justify-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-md bg-[#1a3c34] text-lg font-bold text-[#f6f1e8]">G</span>
           <div>
-            <div className="text-sm font-semibold text-[#1a3c34]">Zentrix Corporation</div>
+            <div className="text-sm font-semibold text-[#1a3c34]">Zentrix HR</div>
             <div className="text-[11px] font-semibold tracking-[0.18em] text-[#c4a574]">HUMAN RESOURCES</div>
           </div>
         </div>
