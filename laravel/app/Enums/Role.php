@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Enums;
+
+enum Role: string
+{
+    case SUPER_ADMIN = 'SUPER_ADMIN';
+    case HR_ADMIN = 'HR_ADMIN';
+    case HR_MANAGER = 'HR_MANAGER';
+    case DEPARTMENT_MANAGER = 'DEPARTMENT_MANAGER';
+    case SUPERVISOR = 'SUPERVISOR';
+    case PAYROLL_OFFICER = 'PAYROLL_OFFICER';
+    case EMPLOYEE = 'EMPLOYEE';
+    case RECRUITMENT_OFFICER = 'RECRUITMENT_OFFICER';
+}
