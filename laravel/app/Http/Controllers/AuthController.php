@@ -66,9 +66,11 @@ class AuthController extends Controller
             return back()->withErrors(['current_password' => 'Current password is incorrect.']);
         }
 
+        $forced = $user->must_change_password;
         $user->forceFill(['password_hash' => Hash::make($data['new_password']), 'must_change_password' => false])->save();
         Audit::log('UPDATE', 'User', $user->id, 'Password changed');
 
-        return redirect()->route('dashboard')->with('status', 'Password updated.');
+        // After a forced change go to the dashboard; from the settings page, stay there.
+        return ($forced ? redirect()->route('dashboard') : back())->with('status', 'Password updated.');
     }
 }

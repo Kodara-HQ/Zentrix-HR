@@ -8,6 +8,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Support\Navigation;
 use Illuminate\Support\Facades\Route;
@@ -89,6 +90,22 @@ Route::middleware(['auth', 'hr'])->group(function () {
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
+    // Settings: account page for everyone, system settings for HR (index decides), backups for super administrators
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::middleware('role:HR_ADMIN,HR_MANAGER')->group(function () {
+        Route::put('/settings/company', [SettingsController::class, 'saveCompany'])->name('settings.company');
+        Route::put('/settings/hours', [SettingsController::class, 'saveHours'])->name('settings.hours');
+        Route::put('/settings/workflows/{workflow}', [SettingsController::class, 'saveWorkflow'])->name('settings.workflows');
+        Route::put('/settings/notifications', [SettingsController::class, 'saveNotifications'])->name('settings.notifications');
+        Route::post('/settings/lists/{list}', [SettingsController::class, 'storeItem'])->name('settings.items.store');
+        Route::patch('/settings/lists/{list}/{id}', [SettingsController::class, 'updateItem'])->name('settings.items.update');
+        Route::delete('/settings/lists/{list}/{id}', [SettingsController::class, 'destroyItem'])->name('settings.items.destroy');
+    });
+    Route::middleware('role:SUPER_ADMIN')->group(function () {
+        Route::post('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup');
+        Route::get('/settings/backup/{file}', [SettingsController::class, 'downloadBackup'])->name('settings.backup.download');
+    });
+
     // Notifications (each person's own)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
@@ -96,7 +113,7 @@ Route::middleware(['auth', 'hr'])->group(function () {
 
     // Modules still being moved from the Node/React version show a holding page until their controller lands.
     // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users'];
+    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings'];
     $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
     foreach (Navigation::modules() as $module) {
         if (in_array($module['path'], $ported, true)) {
