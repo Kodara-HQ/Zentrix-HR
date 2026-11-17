@@ -50,6 +50,18 @@ adds a sample company with 18 staff and a test administrator. **Every test accou
 
 `yaw.darko@zentrix.gh` has resigned, so that account is switched off.
 
+## Monthly payroll
+
+Each day at 06:00 the scheduler calculates the current month's payroll if nobody has yet. The run waits for an HR administrator or HR manager to approve it; approving makes the payslips final, releases them to employees, and takes loan repayments off balances. Bonuses, deductions and loans for an approved month are refused, so add them to the next month.
+
+Keep the scheduler running alongside the app:
+
+```bash
+php artisan schedule:work
+```
+
+On a server, add a cron entry for `php artisan schedule:run` every minute instead.
+
 ## Tests
 
 ```bash
