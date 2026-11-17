@@ -164,9 +164,8 @@ class DemoSeeder extends Seeder
         $departments['FIN']->update(['head_id' => $byNo['EMP-0005']->id]);
         $departments['OPS']->update(['head_id' => $byNo['EMP-0008']->id]);
 
-        $transport = PayrollComponent::create(['name' => 'Transport allowance', 'code' => 'TRANSPORT', 'kind' => 'ALLOWANCE', 'taxable' => true]);
-        $rent = PayrollComponent::create(['name' => 'Rent allowance', 'code' => 'RENT', 'kind' => 'ALLOWANCE', 'taxable' => true]);
-        PayrollComponent::create(['name' => 'Staff welfare deduction', 'code' => 'WELFARE', 'kind' => 'DEDUCTION', 'taxable' => false, 'description' => 'Post-tax welfare contribution']);
+        $transport = PayrollComponent::where('code', 'TRANSPORT')->firstOrFail(); // created by ReferenceDataSeeder
+        $rent = PayrollComponent::where('code', 'RENT')->firstOrFail();
         foreach ($people as $person) {
             if ($person[10] === 'RESIGNED') {
                 continue;
@@ -178,6 +177,7 @@ class DemoSeeder extends Seeder
             }
         }
 
+        $this->call(DemoAttendanceSeeder::class);
         $this->command?->info('Added Zentrix HR with '.count($people).' employees. Every demo account signs in with Hris@2026.');
     }
 }

@@ -14,6 +14,12 @@ return [
     |
     */
 
+    // Shared key the fingerprint clock sends with each punch. Devices registered in the biometric_devices
+    // table work too. Leave empty to accept registered devices only.
+    'biometric' => [
+        'key' => env('BIOMETRIC_DEVICE_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

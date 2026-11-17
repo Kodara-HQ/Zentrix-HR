@@ -21,6 +21,21 @@ class ReferenceDataSeeder extends Seeder
 
         app(\App\Services\PayrollService::class)->ensureSetup(); // PAYE bands, SSNIT rates and standard pay components
 
+        if (! \App\Models\WorkingCalendar::exists()) {
+            \App\Models\WorkingCalendar::create([
+                'name' => 'Head office calendar', 'work_days' => [1, 2, 3, 4, 5], 'start_time' => '08:00', 'end_time' => '17:00',
+                'hours_per_day' => 8, 'hours_per_month' => 176, 'grace_minutes' => 15, 'overtime_weekday' => 1.5, 'overtime_weekend' => 2, 'is_active' => true,
+            ]);
+        }
+
+        // Ghana public holidays that fall on the same date every year. Movable ones (Eid, Easter, Farmers' Day) are added each year in settings.
+        foreach ([
+            ["New Year's Day", '01-01'], ['Constitution Day', '01-07'], ['Independence Day', '03-06'], ['May Day', '05-01'],
+            ["Founders' Day", '08-04'], ['Kwame Nkrumah Memorial Day', '09-21'], ['Christmas Day', '12-25'], ['Boxing Day', '12-26'],
+        ] as [$name, $monthDay]) {
+            \App\Models\Holiday::firstOrCreate(['name' => $name, 'date' => "2026-{$monthDay}"], ['recurring' => true]);
+        }
+
         foreach ([['Full-time', 'Open or fixed-term full-time employment'], ['Contract', 'Fixed-term contract'], ['Casual', 'Casual engagement']] as [$name, $description]) {
             EmploymentType::firstOrCreate(['name' => $name], ['description' => $description]);
         }

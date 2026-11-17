@@ -30,6 +30,7 @@ class LeaveTest extends TestCase
     {
         parent::setUp();
         $this->seed(ReferenceDataSeeder::class);
+        Holiday::query()->delete(); // each test adds the holidays it needs, so the day counts stay predictable
         $this->boss = $this->makeEmployee(['first_name' => 'Ama', 'last_name' => 'Adjei', 'gender' => 'FEMALE']);
         $this->bossUser = $this->makeUser(Role::SUPERVISOR, ['employee_id' => $this->boss->id, 'department_id' => $this->boss->department_id]);
         $this->staff = $this->makeEmployee(['first_name' => 'Kwame', 'last_name' => 'Boateng', 'manager_id' => $this->boss->id]);
