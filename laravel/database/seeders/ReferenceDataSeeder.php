@@ -19,6 +19,8 @@ class ReferenceDataSeeder extends Seeder
             Company::create(['name' => 'Zentrix HR', 'legal_name' => 'Zentrix HR', 'city' => 'Accra', 'country' => 'Ghana', 'currency' => 'GHS', 'next_employee_no' => 1]);
         }
 
+        app(\App\Services\PayrollService::class)->ensureSetup(); // PAYE bands, SSNIT rates and standard pay components
+
         foreach ([['Full-time', 'Open or fixed-term full-time employment'], ['Contract', 'Fixed-term contract'], ['Casual', 'Casual engagement']] as [$name, $description]) {
             EmploymentType::firstOrCreate(['name' => $name], ['description' => $description]);
         }

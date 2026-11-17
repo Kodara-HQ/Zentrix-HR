@@ -1,8 +1,6 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Run `php artisan schedule:work` (or a cron entry for `php artisan schedule:run`) so these happen.
+Schedule::command('hr:payroll-month')->dailyAt('06:00')->withoutOverlapping();

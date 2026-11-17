@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\PayrollController;
 use App\Support\Navigation;
 use Illuminate\Support\Facades\Route;
 
@@ -48,9 +49,20 @@ Route::middleware(['auth', 'hr'])->group(function () {
     Route::post('/leave/{leave}/decision', [LeaveController::class, 'decide'])->name('leave.decide')->middleware('role:SUPERVISOR,DEPARTMENT_MANAGER,HR_ADMIN,HR_MANAGER');
     Route::post('/leave/{leave}/cancel', [LeaveController::class, 'cancel'])->name('leave.cancel');
 
+    // Payroll (officers run it, HR approves, everyone downloads their own approved payslips)
+    $officers = 'role:HR_ADMIN,HR_MANAGER,PAYROLL_OFFICER';
+    Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+    Route::get('/payroll/payslips/{payslip}', [PayrollController::class, 'payslip'])->name('payroll.payslip');
+    Route::get('/payroll/runs/{run}', [PayrollController::class, 'show'])->name('payroll.show')->middleware($officers);
+    Route::post('/payroll/process', [PayrollController::class, 'process'])->name('payroll.process')->middleware($officers);
+    Route::post('/payroll/runs/{run}/decision', [PayrollController::class, 'decide'])->name('payroll.decide')->middleware('role:HR_ADMIN,HR_MANAGER');
+    Route::post('/payroll/adjustments', [PayrollController::class, 'storeAdjustment'])->name('payroll.adjustments.store')->middleware($officers);
+    Route::delete('/payroll/adjustments/{adjustment}', [PayrollController::class, 'destroyAdjustment'])->name('payroll.adjustments.destroy')->middleware($officers);
+    Route::post('/payroll/loans', [PayrollController::class, 'storeLoan'])->name('payroll.loans.store')->middleware($officers);
+
     // Modules still being moved from the Node/React version show a holding page until their controller lands.
     // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees', '/leave'];
+    $ported = ['/employees', '/leave', '/payroll'];
     $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
     foreach (Navigation::modules() as $module) {
         if (in_array($module['path'], $ported, true)) {

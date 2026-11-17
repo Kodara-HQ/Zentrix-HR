@@ -175,7 +175,7 @@ class EmployeeTest extends TestCase
     public function test_payroll_staff_manage_pay_items(): void
     {
         $employee = $this->makeEmployee();
-        $component = \App\Models\PayrollComponent::create(['name' => 'Transport allowance', 'code' => 'TRANSPORT', 'kind' => 'ALLOWANCE']);
+        $component = \App\Models\PayrollComponent::firstOrCreate(['code' => 'TRANSPORT'], ['name' => 'Transport allowance', 'kind' => 'ALLOWANCE']);
         $payroll = $this->makeUser(Role::PAYROLL_OFFICER);
 
         $this->actingAs($payroll)->post("/employees/{$employee->id}/pay-items", ['component_id' => $component->id, 'amount' => 400]);
