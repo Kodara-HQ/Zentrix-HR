@@ -29,9 +29,18 @@ use Illuminate\Support\Facades\Hash;
  */
 class DemoSeeder extends Seeder
 {
+    public const PASSWORD = 'Hris@2026';
+
     public function run(EmployeeService $employees): void
     {
         $this->call(ReferenceDataSeeder::class);
+
+        // A test administrator that is not tied to a staff record (sign in as "test").
+        User::firstOrCreate(['username' => 'test'], [
+            'email' => 'test@zentrix.test', 'password_hash' => Hash::make(self::PASSWORD), 'role' => 'SUPER_ADMIN',
+            'first_name' => 'Test', 'last_name' => 'Administrator', 'is_active' => true, 'must_change_password' => false,
+        ]);
+
         if (Employee::exists()) {
             $this->command?->warn('Employees already exist; the demo data was not added.');
 
@@ -96,7 +105,7 @@ class DemoSeeder extends Seeder
             ['EMP-0018', 'Yaw', 'Darko', 'MALE', 'EMPLOYEE', 'OPS', 'Driver', 'Tema Port', 'EMP-0008', 3400, 'RESIGNED', $birthday(200, 1987), '2018-01-15'],
         ];
 
-        $passwordHash = Hash::make('Hris@2026');
+        $passwordHash = Hash::make(self::PASSWORD);
         $byNo = [];
         foreach ($people as $person) {
             [$no, $first, $last, $gender, $role, $dept, $title, $location, , $salary, $status, $dob, $hired] = $person;

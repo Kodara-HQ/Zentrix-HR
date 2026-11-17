@@ -5,18 +5,14 @@
 <x-layouts.plain title="Sign in">
     <div class="grid min-h-screen bg-cream lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         {{-- Left: brand and sign-in --}}
-        <div class="flex flex-col px-6 py-8 sm:px-12 lg:border-r lg:border-line lg:px-16">
+        <div class="flex flex-col px-6 py-8 sm:px-12 lg:px-16">
             <div class="flex items-center gap-3">
                 <span class="grid h-10 w-10 place-items-center rounded-lg bg-navy text-lg font-bold text-white">{{ mb_substr($company, 0, 1) }}</span>
-                <div class="leading-tight">
-                    <div class="text-sm font-semibold text-ink">{{ $company }}</div>
-                    <div class="text-[11px] font-semibold tracking-[0.18em] text-navy">HUMAN RESOURCES</div>
-                </div>
+                <span class="text-base font-semibold text-ink">{{ $company }}</span>
             </div>
 
             <div class="my-auto w-full max-w-md py-12">
-                <p class="text-xs font-semibold tracking-[0.2em] text-navy">WELCOME BACK</p>
-                <h1 class="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl">Sign in to your HR workspace.</h1>
+                <h1 class="text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl">Sign in to your HR workspace.</h1>
                 <p class="mt-4 text-base leading-relaxed text-muted">People, leave, attendance and payroll in one place, for HR and every employee.</p>
 
                 <form method="post" action="{{ url('/login') }}" class="mt-10 space-y-4">
@@ -38,7 +34,7 @@
             <p class="text-xs text-muted">&copy; {{ now()->year }} {{ $company }}</p>
         </div>
 
-        {{-- Right: photo with floating cards --}}
+        {{-- Right: photo with one card in the corner --}}
         <div class="relative hidden overflow-hidden bg-navy lg:block">
             @if ($photo)
                 <img src="{{ asset("images/{$photo}") }}" alt="" class="absolute inset-0 h-full w-full object-cover">
@@ -47,17 +43,9 @@
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,#2a3f7a_0%,#1b2b57_45%,#13204a_100%)]"></div>
             @endif
 
-            <div class="absolute left-10 top-10 w-60 bg-white/95 p-5 shadow-lg backdrop-blur">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="text-3xl font-semibold tracking-tight text-navy">ESS</div>
-                    <span class="rounded-full bg-sky px-2 py-0.5 text-xs font-semibold text-navy">Self service</span>
-                </div>
-                <p class="mt-1 text-sm text-body">Payslips, leave and attendance for every employee</p>
-            </div>
-
-            <div class="absolute bottom-10 right-10 w-[22rem] bg-navy/95 p-7 text-white shadow-2xl ring-1 ring-white/10 backdrop-blur">
-                <h2 class="text-xl font-semibold leading-snug">Everything HR runs on, in one record</h2>
-                <ul class="mt-5 space-y-3 text-sm text-sky-text">
+            <div class="absolute bottom-8 left-8 w-72 bg-navy/95 p-5 text-white shadow-2xl ring-1 ring-white/10 backdrop-blur">
+                <h2 class="text-base font-semibold leading-snug">Everything HR runs on, in one record</h2>
+                <ul class="mt-3 space-y-2 text-sm text-sky-text">
                     @foreach (['Employee records and history', 'Leave and attendance', 'Payroll with PAYE and SSNIT', 'Recruitment to exit'] as $line)
                         <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-accent ring-4 ring-accent/20"></span>{{ $line }}</li>
                     @endforeach

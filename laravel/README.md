@@ -1,59 +1,63 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Zentrix HR (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+The PHP + MySQL version of Zentrix HR. It replaces the React client and Node server in `../client` and `../server`, module by module.
 
-## About Laravel
+## Run it locally (XAMPP)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. Start MySQL in the XAMPP control panel.
+2. In this folder:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```bash
+composer install
+npm install
+copy .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+npm run build
+php artisan serve
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Open http://localhost:8000. `.env` expects a MySQL database called `zentrix_hr` with user `root` and no password, which is the XAMPP default. Create the database first if it does not exist.
 
-## Learning Laravel
+The database starts with no people. Either load the sample company below or create the first real administrator:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+php artisan hr:admin you@example.com
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+That prints a temporary password, which must be changed at the first sign-in.
 
-## Laravel Sponsors
+## Test sign-ins
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+php artisan db:seed --class=DemoSeeder
+```
 
-### Premium Partners
+adds a sample company with 18 staff and a test administrator. **Every test account uses the password `Hris@2026`.** Never load the demo data on a live system.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+| Sign in as | Role | Sees |
+| --- | --- | --- |
+| `test` | Super administrator | Everything, not linked to a staff record |
+| `efua.boateng@zentrix.gh` | Super administrator | Everything, with her own ESS record |
+| `kojo.mensah@zentrix.gh` | HR manager | All staff and HR modules |
+| `akosua.darko@zentrix.gh` | HR administrator | All staff and HR modules |
+| `yaw.owusu@zentrix.gh` | Payroll officer | Staff and pay, no recruitment |
+| `abena.sarpong@zentrix.gh` | Recruitment officer | Recruitment |
+| `kofi.asante@zentrix.gh` | Department manager | The Operations department |
+| `ama.adjei@zentrix.gh` | Supervisor | Her direct reports |
+| `kwame.boateng@zentrix.gh` | Employee | ESS only: own profile, leave, attendance, payslips |
 
-## Contributing
+`yaw.darko@zentrix.gh` has resigned, so that account is switched off.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Tests
 
-## Code of Conduct
+```bash
+php artisan test
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The tests use a separate MySQL database, `zentrix_hr_test`, so create that too.
 
-## Security Vulnerabilities
+## Sign-in photo
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The sign-in page shows `public/images/login.jpg`. Replace that file to change the picture.
