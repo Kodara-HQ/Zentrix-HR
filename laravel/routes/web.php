@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PayrollController;
 use App\Support\Navigation;
 use Illuminate\Support\Facades\Route;
@@ -77,9 +78,14 @@ Route::middleware(['auth', 'hr'])->group(function () {
     Route::post('/attendance/shifts', [AttendanceController::class, 'storeShift'])->name('attendance.shifts.store')->middleware('role:HR_ADMIN,HR_MANAGER,DEPARTMENT_MANAGER');
     Route::redirect('/clock', '/attendance');
 
+    // Notifications (each person's own)
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+
     // Modules still being moved from the Node/React version show a holding page until their controller lands.
     // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees', '/leave', '/payroll', '/attendance'];
+    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications'];
     $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
     foreach (Navigation::modules() as $module) {
         if (in_array($module['path'], $ported, true)) {

@@ -23,12 +23,11 @@
             <text x="{{ $padL }}" y="{{ $h - 4 }}" font-size="11" fill="var(--color-muted)">{{ \App\Support\Format::date($points->first()['date']) }}</text>
             <text x="{{ $w - 8 }}" y="{{ $h - 4 }}" text-anchor="end" font-size="11" fill="var(--color-muted)">{{ \App\Support\Format::date($points->last()['date']) }}</text>
             <path d="{{ $path }}" fill="none" stroke="var(--color-accent-strong)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
-            <template x-if="i !== null">
-                <g>
-                    <line :x1="pts[i].x" :x2="pts[i].x" y1="{{ $padT }}" y2="{{ $h - $padB }}" stroke="var(--color-muted)" stroke-width="1" stroke-dasharray="3 3" />
-                    <circle :cx="pts[i].x" :cy="pts[i].y" r="5" fill="var(--color-accent-strong)" stroke="white" stroke-width="2" />
-                </g>
-            </template>
+            {{-- x-if does not work inside SVG, so the marker is shown/hidden and every binding guards against no point. --}}
+            <g x-show="i !== null">
+                <line :x1="i === null ? 0 : pts[i].x" :x2="i === null ? 0 : pts[i].x" y1="{{ $padT }}" y2="{{ $h - $padB }}" stroke="var(--color-muted)" stroke-width="1" stroke-dasharray="3 3" />
+                <circle :cx="i === null ? 0 : pts[i].x" :cy="i === null ? 0 : pts[i].y" r="5" fill="var(--color-accent-strong)" stroke="white" stroke-width="2" />
+            </g>
         </svg>
         <div x-show="i !== null" x-cloak class="pointer-events-none absolute top-0 rounded-lg bg-navy px-2.5 py-1.5 text-xs text-white shadow-lg"
              :style="i !== null && `left: calc(${pts[i].x / {{ $w }} * 100}% - 3rem)`">
