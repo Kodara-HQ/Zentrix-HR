@@ -6,14 +6,29 @@
 @source '../**/*.js';
 @source '../../app/Support/*.php';
 
+/* Zentrix palette: cream canvas, deep navy, bright blue accent, near-black ink. */
 @theme {
-    --font-sans: 'Source Sans 3', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Inter', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+
+    --color-cream: #faf8f1;
+    --color-paper: #ffffff;
+    --color-ink: #14231b;
+    --color-body: #24302b;
+    --color-muted: #6b6b6b;
+    --color-line: #e7e2d6;
+    --color-navy: #1b2b57;
+    --color-navy-deep: #13204a;
+    --color-accent: #1d9bf0;
+    --color-accent-strong: #1570c4;
+    --color-accent-deep: #105a9e;
+    --color-sky: #eaf2fc;
+    --color-sky-text: #c9dcf5;
 }
 
 body {
     margin: 0;
-    background: #f6f1e8;
-    color: #24312c;
+    background: var(--color-cream);
+    color: var(--color-body);
 }
 
 [x-cloak] {

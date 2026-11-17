@@ -1,8 +1,8 @@
 <x-layouts.plain title="Choose a new password">
     <div class="px-4">
-        <div class="mx-auto mt-16 max-w-md rounded-2xl border border-[#e6dfd4] bg-[#fffcf8] p-6 shadow-sm">
-            <h1 class="text-xl font-semibold text-[#1a3c34]">Choose a new password</h1>
-            <p class="mt-1 text-sm text-[#6e675e]">Use at least 8 characters, including a letter and a number.</p>
+        <div class="mx-auto mt-16 max-w-md rounded-2xl border border-line bg-paper p-6 shadow-sm">
+            <h1 class="text-xl font-semibold text-ink">Choose a new password</h1>
+            <p class="mt-1 text-sm text-muted">Use at least 8 characters, including a letter and a number.</p>
             <form method="post" action="{{ route('password.update') }}" class="mt-4 space-y-3">
                 @csrf
                 @method('put')

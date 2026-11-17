@@ -108,7 +108,11 @@ class Access
             return true;
         }
 
-        return $employeeId !== null && $path === "/employees/{$employeeId}";
+        if (str_starts_with($path, '/files/') || $path === '/files') {
+            return true; // FileController checks ownership itself
+        }
+
+        return $employeeId !== null && ($path === "/employees/{$employeeId}" || str_starts_with($path, "/employees/{$employeeId}/"));
     }
 
     /** @param  array<Role|string>  $roles */

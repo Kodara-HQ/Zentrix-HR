@@ -7,11 +7,12 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Reference data (company, leave types, PAYE bands, ...) is ported from server/src/seed.ts
-     * together with the modules that use it. Create the first sign-in with `php artisan hr:admin`.
+     * `php artisan db:seed` loads the settings every installation needs.
+     * `php artisan db:seed --class=DemoSeeder` adds a sample company with 18 staff for trying the system out.
+     * Create the first real sign-in with `php artisan hr:admin`.
      */
     public function run(): void
     {
-        //
+        $this->call(ReferenceDataSeeder::class);
     }
 }
