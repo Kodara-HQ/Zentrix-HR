@@ -14,7 +14,7 @@ class AuthTest extends TestCase
     public function test_guests_are_sent_to_sign_in(): void
     {
         $this->get('/')->assertRedirect('/login');
-        $this->get('/login')->assertOk()->assertSee('Zentrix Corporation')->assertSee('Sign in to your HR workspace.')->assertSee('Username or work email');
+        $this->get('/login')->assertOk()->assertSee('Zentrix HR')->assertSee('Sign in to your HR workspace.')->assertSee('Username or work email');
     }
 
     public function test_signs_in_with_email_in_any_case_or_username(): void

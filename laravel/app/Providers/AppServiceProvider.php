@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
         // Company name and unread count appear in every layout.
         View::composer(['components.layouts.*', 'auth.*'], function ($view) {
             static $company = null;
-            $company ??= rescue(fn () => Company::query()->value('name'), null, false) ?: 'Zentrix Corporation';
+            $company ??= rescue(fn () => Company::query()->value('name'), null, false) ?: 'Zentrix HR';
             $user = auth()->user();
             $view->with([
                 'company' => $company,

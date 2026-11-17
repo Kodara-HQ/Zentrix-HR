@@ -97,7 +97,7 @@ class EmployeeService
             'status' => 'ACTIVE',
         ]);
 
-        $company = Company::query()->value('name') ?: 'Zentrix Corporation';
+        $company = Company::query()->value('name') ?: 'Zentrix HR';
         $this->letters->issue($employee, LetterType::APPOINTMENT, 'Appointment letter', $hireDate, [
             "I am pleased to confirm your appointment with {$company}. The particulars of this appointment are set out below.",
             "You will serve as {$employee->jobTitle->name} in the {$employee->department->name} department, based at {$employee->location->name}, {$employee->location->city}. Your employment begins on ".CarbonImmutable::parse($hireDate)->format('j F Y').", and your employee number is {$employeeNo}.",

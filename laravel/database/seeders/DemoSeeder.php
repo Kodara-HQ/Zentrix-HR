@@ -42,7 +42,7 @@ class DemoSeeder extends Seeder
         $birthday = fn (int $daysAhead, int $year) => $today->addDays($daysAhead)->setYear($year)->toDateString();
 
         Company::first()->update([
-            'name' => 'Zentrix Corporation', 'legal_name' => 'Zentrix Corporation', 'tin' => 'C0012345678', 'ssnit_employer_no' => 'ER-ML-20418',
+            'name' => 'Zentrix HR', 'legal_name' => 'Zentrix HR', 'tin' => 'C0012345678', 'ssnit_employer_no' => 'ER-ML-20418',
             'email' => 'hr@zentrix.gh', 'phone' => '+233 30 200 0100', 'address' => '14 Liberation Road, Airport City', 'city' => 'Accra', 'next_employee_no' => 19,
         ]);
 
@@ -124,7 +124,7 @@ class DemoSeeder extends Seeder
                 'employee_id' => $employee->id, 'department_id' => $employee->department_id, 'location_id' => $employee->location_id,
                 'is_active' => $status !== 'RESIGNED', 'must_change_password' => false,
             ]);
-            EmployeeEvent::create(['employee_id' => $employee->id, 'type' => EventType::HIRE, 'title' => 'Joined Zentrix Corporation', 'effective_date' => $hired, 'to_value' => ['employeeNo' => $no, 'title' => $title]]);
+            EmployeeEvent::create(['employee_id' => $employee->id, 'type' => EventType::HIRE, 'title' => 'Joined Zentrix HR', 'effective_date' => $hired, 'to_value' => ['employeeNo' => $no, 'title' => $title]]);
             EmployeeEducation::create([
                 'employee_id' => $employee->id,
                 'institution' => $dept === 'IT' ? 'Kwame Nkrumah University of Science and Technology' : 'University of Ghana',
@@ -169,6 +169,6 @@ class DemoSeeder extends Seeder
             }
         }
 
-        $this->command?->info('Added Zentrix Corporation with '.count($people).' employees. Every demo account signs in with Hris@2026.');
+        $this->command?->info('Added Zentrix HR with '.count($people).' employees. Every demo account signs in with Hris@2026.');
     }
 }

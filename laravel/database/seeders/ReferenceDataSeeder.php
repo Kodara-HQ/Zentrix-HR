@@ -16,7 +16,7 @@ class ReferenceDataSeeder extends Seeder
     public function run(): void
     {
         if (! Company::exists()) {
-            Company::create(['name' => 'Zentrix Corporation', 'legal_name' => 'Zentrix Corporation', 'city' => 'Accra', 'country' => 'Ghana', 'currency' => 'GHS', 'next_employee_no' => 1]);
+            Company::create(['name' => 'Zentrix HR', 'legal_name' => 'Zentrix HR', 'city' => 'Accra', 'country' => 'Ghana', 'currency' => 'GHS', 'next_employee_no' => 1]);
         }
 
         foreach ([['Full-time', 'Open or fixed-term full-time employment'], ['Contract', 'Fixed-term contract'], ['Casual', 'Casual engagement']] as [$name, $description]) {
