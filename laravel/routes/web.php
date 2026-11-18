@@ -8,6 +8,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Support\Navigation;
@@ -106,6 +107,23 @@ Route::middleware(['auth', 'hr'])->group(function () {
         Route::get('/settings/backup/{file}', [SettingsController::class, 'downloadBackup'])->name('settings.backup.download');
     });
 
+    // Recruitment (page roles from the menu; recruiters run the pipeline, the HR manager approves requisitions)
+    Route::middleware('role:HR_ADMIN,HR_MANAGER,RECRUITMENT_OFFICER,DEPARTMENT_MANAGER')->group(function () {
+        Route::get('/recruitment', [RecruitmentController::class, 'index'])->name('recruitment.index');
+        Route::post('/recruitment/requisitions', [RecruitmentController::class, 'storeRequisition'])->name('recruitment.requisitions.store');
+    });
+    Route::post('/recruitment/requisitions/{requisition}/decision', [RecruitmentController::class, 'decideRequisition'])->name('recruitment.requisitions.decide')->middleware('role:HR_MANAGER');
+    Route::middleware('role:'.implode(',', RecruitmentController::RECRUITERS))->group(function () {
+        Route::post('/recruitment/vacancies', [RecruitmentController::class, 'storeVacancy'])->name('recruitment.vacancies.store');
+        Route::patch('/recruitment/vacancies/{vacancy}', [RecruitmentController::class, 'updateVacancy'])->name('recruitment.vacancies.update');
+        Route::post('/recruitment/applicants', [RecruitmentController::class, 'storeApplicant'])->name('recruitment.applicants.store');
+        Route::patch('/recruitment/applicants/{applicant}', [RecruitmentController::class, 'updateApplicant'])->name('recruitment.applicants.update');
+        Route::post('/recruitment/applicants/{applicant}/interviews', [RecruitmentController::class, 'storeInterview'])->name('recruitment.interviews.store');
+        Route::patch('/recruitment/interviews/{interview}', [RecruitmentController::class, 'scoreInterview'])->name('recruitment.interviews.score');
+        Route::post('/recruitment/applicants/{applicant}/offers', [RecruitmentController::class, 'storeOffer'])->name('recruitment.offers.store');
+        Route::post('/recruitment/offers/{offer}/accept', [RecruitmentController::class, 'acceptOffer'])->name('recruitment.offers.accept');
+    });
+
     // Notifications (each person's own)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
@@ -113,7 +131,7 @@ Route::middleware(['auth', 'hr'])->group(function () {
 
     // Modules still being moved from the Node/React version show a holding page until their controller lands.
     // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings'];
+    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings', '/recruitment'];
     $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
     foreach (Navigation::modules() as $module) {
         if (in_array($module['path'], $ported, true)) {
