@@ -9,3 +9,7 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Container scripts run on Linux; keep LF endings even when checked out on Windows.
+*.sh text eol=lf
+Dockerfile text eol=lf

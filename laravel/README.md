@@ -62,6 +62,35 @@ php artisan schedule:work
 
 On a server, add a cron entry for `php artisan schedule:run` every minute instead.
 
+## Hosting online (Railway)
+
+The `Dockerfile` builds a production image with PHP 8.2 and Apache. On every start the container updates the database, loads the reference settings and runs the scheduler, so nothing needs to be done by hand after a deploy.
+
+1. Sign in at railway.com with GitHub and create a project from the `Kodara-HQ/Zentrix-HR` repository.
+2. On the new service: set **Root directory** to `laravel` and **Branch** to `laravel`. Railway reads `railway.json` and builds the `Dockerfile`.
+3. In the project, add a **MySQL** database.
+4. On the app service, add a **Volume** mounted at `/var/www/html/storage`, so uploaded documents, letters and payslips survive redeploys.
+5. Set these variables on the app service:
+
+   | Variable | Value |
+   | --- | --- |
+   | `APP_KEY` | the output of `php artisan key:generate --show`, run once on your computer |
+   | `APP_ENV` | `production` |
+   | `APP_DEBUG` | `false` |
+   | `APP_URL` | the https address Railway gives the service |
+   | `DB_CONNECTION` | `mysql` |
+   | `DB_URL` | `${{MySQL.MYSQL_URL}}` |
+   | `SESSION_SECURE_COOKIE` | `true` |
+   | `LOG_CHANNEL` | `stderr` |
+   | `BIOMETRIC_DEVICE_KEY` | the key the fingerprint clock will send (optional) |
+
+6. Under **Networking**, generate a domain (or add your own). Open it; the first start takes a minute while the database is set up.
+7. Create the first administrator from the service's shell: `php artisan hr:admin you@example.com`. Do not load `DemoSeeder` on the live system.
+
+For email notifications, also set `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_FROM_ADDRESS`. The fingerprint clock must reach `https://<your domain>/api/time/biometric/punch` over the internet.
+
+The same image runs on Render or Fly.io; point `DB_URL` at any MySQL 8 or MariaDB 10.4+ database and give `storage/` a persistent disk.
+
 ## Tests
 
 ```bash

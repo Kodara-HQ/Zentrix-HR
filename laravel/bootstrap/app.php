@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'hr' => \App\Http\Middleware\HrPortal::class,
             'role' => \App\Http\Middleware\RequireRole::class,
         ]);
+        // Online hosts (Railway, Render, …) end HTTPS at their proxy; trust it so URLs and secure cookies are right.
+        $middleware->trustProxies(at: '*');
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
     })
