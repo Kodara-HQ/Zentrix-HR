@@ -45,6 +45,7 @@ class Navigation
                 ['path' => '/payroll', 'label' => 'My payslips', 'icon' => 'wallet'],
                 ['path' => '/performance', 'label' => 'My reviews', 'icon' => 'chart-column'],
                 ['path' => '/training', 'label' => 'My training', 'icon' => 'graduation-cap'],
+                ['path' => '/welfare', 'label' => 'Welfare', 'icon' => 'heart-handshake'],
                 ['path' => '/notifications', 'label' => 'Notifications', 'icon' => 'bell'],
             ]));
         }

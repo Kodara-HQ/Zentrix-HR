@@ -11,7 +11,10 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\RecruitmentController;
+use App\Http\Controllers\RelationsController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\WelfareController;
+use App\Http\Controllers\ExitController;
 use App\Http\Controllers\UserController;
 use App\Support\Navigation;
 use Illuminate\Support\Facades\Route;
@@ -152,6 +155,40 @@ Route::middleware(['auth', 'hr'])->group(function () {
     });
     Route::post('/training/programs/{program}/enrol', [TrainingController::class, 'enrol'])->name('training.enrol')->middleware('role:HR_ADMIN,HR_MANAGER,DEPARTMENT_MANAGER');
 
+    // Employee relations (HR only)
+    Route::middleware('role:HR_ADMIN,HR_MANAGER')->group(function () {
+        Route::get('/relations', [RelationsController::class, 'index'])->name('relations.index');
+        Route::post('/relations/grievances', [RelationsController::class, 'storeGrievance'])->name('relations.grievances.store');
+        Route::patch('/relations/grievances/{grievance}', [RelationsController::class, 'updateGrievance'])->name('relations.grievances.update');
+        Route::post('/relations/cases', [RelationsController::class, 'storeCase'])->name('relations.cases.store');
+        Route::patch('/relations/cases/{case}', [RelationsController::class, 'updateCase'])->name('relations.cases.update');
+        Route::post('/relations/warnings', [RelationsController::class, 'storeWarning'])->name('relations.warnings.store');
+    });
+
+    // Welfare and engagement (everyone takes part; HR decides and publishes)
+    Route::get('/welfare', [WelfareController::class, 'index'])->name('welfare.index');
+    Route::post('/welfare/requests', [WelfareController::class, 'storeRequest'])->name('welfare.requests.store');
+    Route::post('/welfare/suggestions', [WelfareController::class, 'storeSuggestion'])->name('welfare.suggestions.store');
+    Route::post('/welfare/feedback', [WelfareController::class, 'storeFeedback'])->name('welfare.feedback.store');
+    Route::post('/welfare/surveys/{survey}/respond', [WelfareController::class, 'respondSurvey'])->name('welfare.surveys.respond');
+    Route::middleware('role:HR_ADMIN,HR_MANAGER')->group(function () {
+        Route::patch('/welfare/requests/{welfare}', [WelfareController::class, 'decideRequest'])->name('welfare.requests.decide');
+        Route::post('/welfare/recognition', [WelfareController::class, 'storeRecognition'])->name('welfare.recognition.store');
+        Route::patch('/welfare/suggestions/{suggestion}', [WelfareController::class, 'respondSuggestion'])->name('welfare.suggestions.respond');
+        Route::post('/welfare/activities', [WelfareController::class, 'storeActivity'])->name('welfare.activities.store');
+        Route::delete('/welfare/activities/{activity}', [WelfareController::class, 'destroyActivity'])->name('welfare.activities.destroy');
+        Route::post('/welfare/surveys', [WelfareController::class, 'storeSurvey'])->name('welfare.surveys.store');
+        Route::post('/welfare/surveys/{survey}/close', [WelfareController::class, 'closeSurvey'])->name('welfare.surveys.close');
+    });
+
+    // Exit management (anyone can resign; HR records other exits and decides)
+    Route::get('/exit', [ExitController::class, 'index'])->name('exit.index');
+    Route::post('/exit', [ExitController::class, 'store'])->name('exit.store');
+    Route::middleware('role:HR_ADMIN,HR_MANAGER')->group(function () {
+        Route::post('/exit/{separation}/decision', [ExitController::class, 'decide'])->name('exit.decide');
+        Route::patch('/exit/clearance/{item}', [ExitController::class, 'clear'])->name('exit.clearance');
+    });
+
     // Notifications (each person's own)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
@@ -159,7 +196,7 @@ Route::middleware(['auth', 'hr'])->group(function () {
 
     // Modules still being moved from the Node/React version show a holding page until their controller lands.
     // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings', '/recruitment', '/performance', '/training'];
+    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings', '/recruitment', '/performance', '/training', '/relations', '/welfare', '/exit'];
     $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
     foreach (Navigation::modules() as $module) {
         if (in_array($module['path'], $ported, true)) {

@@ -14,6 +14,7 @@
                 <div class="flex justify-between gap-3"><dt class="text-muted">Last sign-in</dt><dd class="font-semibold text-ink">{{ $user->last_login_at ? Format::date($user->last_login_at) : '—' }}</dd></div>
             </dl>
             <p class="mt-3 text-xs text-muted">Ask HR to change your name, email or role.@if ($user->employee_id) Update your phone and emergency contacts on <a class="text-accent-strong" href="{{ route('employees.show', $user->employee_id) }}">your profile</a>.@endif</p>
+            @if ($user->employee_id)<p class="mt-2 text-xs text-muted">Leaving? <a class="text-accent-strong" href="{{ route('exit.index') }}">Hand in your resignation</a>.</p>@endif
         </x-panel>
         <x-panel>
             <h2 class="mb-1 font-semibold text-ink">Password</h2>
