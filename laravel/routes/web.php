@@ -8,6 +8,8 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\PerformanceController;
+use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
@@ -124,6 +126,32 @@ Route::middleware(['auth', 'hr'])->group(function () {
         Route::post('/recruitment/offers/{offer}/accept', [RecruitmentController::class, 'acceptOffer'])->name('recruitment.offers.accept');
     });
 
+    // Performance (reviewers manage their team; employees self-assess on their own reviews)
+    Route::middleware('role:HR_ADMIN,HR_MANAGER,DEPARTMENT_MANAGER,SUPERVISOR,EMPLOYEE')->group(function () {
+        Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
+        Route::post('/performance/appraisals/{appraisal}/self', [PerformanceController::class, 'selfAssess'])->name('performance.appraisals.self');
+        Route::get('/training', [TrainingController::class, 'index'])->name('training.index');
+        Route::post('/training/needs', [TrainingController::class, 'storeNeed'])->name('training.needs.store');
+        Route::post('/training/certificates', [TrainingController::class, 'storeCertificate'])->name('training.certificates.store');
+    });
+    Route::middleware('role:'.implode(',', PerformanceController::REVIEWERS))->group(function () {
+        Route::post('/performance/objectives', [PerformanceController::class, 'storeObjective'])->name('performance.objectives.store');
+        Route::patch('/performance/objectives/{objective}', [PerformanceController::class, 'scoreObjective'])->name('performance.objectives.score');
+        Route::post('/performance/appraisals', [PerformanceController::class, 'storeAppraisal'])->name('performance.appraisals.store');
+        Route::post('/performance/appraisals/{appraisal}/review', [PerformanceController::class, 'review'])->name('performance.appraisals.review');
+        Route::post('/performance/appraisals/{appraisal}/plans', [PerformanceController::class, 'storePlan'])->name('performance.plans.store');
+    });
+    Route::middleware('role:HR_ADMIN,HR_MANAGER')->group(function () {
+        Route::post('/performance/cycles', [PerformanceController::class, 'storeCycle'])->name('performance.cycles.store');
+        Route::patch('/performance/cycles/{cycle}', [PerformanceController::class, 'updateCycle'])->name('performance.cycles.update');
+        Route::post('/training/programs', [TrainingController::class, 'storeProgram'])->name('training.programs.store');
+        Route::patch('/training/programs/{program}', [TrainingController::class, 'updateProgram'])->name('training.programs.update');
+        Route::patch('/training/enrollments/{enrollment}', [TrainingController::class, 'updateEnrollment'])->name('training.enrollments.update');
+        Route::patch('/training/needs/{need}', [TrainingController::class, 'updateNeed'])->name('training.needs.update');
+        Route::delete('/training/certificates/{certification}', [TrainingController::class, 'destroyCertificate'])->name('training.certificates.destroy');
+    });
+    Route::post('/training/programs/{program}/enrol', [TrainingController::class, 'enrol'])->name('training.enrol')->middleware('role:HR_ADMIN,HR_MANAGER,DEPARTMENT_MANAGER');
+
     // Notifications (each person's own)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
@@ -131,7 +159,7 @@ Route::middleware(['auth', 'hr'])->group(function () {
 
     // Modules still being moved from the Node/React version show a holding page until their controller lands.
     // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings', '/recruitment'];
+    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings', '/recruitment', '/performance', '/training'];
     $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
     foreach (Navigation::modules() as $module) {
         if (in_array($module['path'], $ported, true)) {

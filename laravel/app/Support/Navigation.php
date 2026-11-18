@@ -43,6 +43,8 @@ class Navigation
                 ['path' => '/attendance', 'label' => 'My attendance', 'icon' => 'calendar-check'],
                 ['path' => '/leave', 'label' => 'My leave', 'icon' => 'calendar-days'],
                 ['path' => '/payroll', 'label' => 'My payslips', 'icon' => 'wallet'],
+                ['path' => '/performance', 'label' => 'My reviews', 'icon' => 'chart-column'],
+                ['path' => '/training', 'label' => 'My training', 'icon' => 'graduation-cap'],
                 ['path' => '/notifications', 'label' => 'Notifications', 'icon' => 'bell'],
             ]));
         }

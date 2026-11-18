@@ -109,7 +109,7 @@ class Access
         }
 
         // Sub-pages of the ESS sections and documents; their controllers check ownership themselves.
-        foreach (['/files', '/leave', '/attendance', '/payroll', '/notifications', '/settings'] as $section) {
+        foreach (['/files', '/leave', '/attendance', '/payroll', '/notifications', '/settings', '/performance', '/training'] as $section) {
             if ($path === $section || str_starts_with($path, $section.'/')) {
                 return true;
             }
