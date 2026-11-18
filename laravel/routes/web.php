@@ -11,7 +11,10 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\RecruitmentController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\RelationsController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\WorkforceController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\WelfareController;
 use App\Http\Controllers\ExitController;
@@ -194,18 +197,20 @@ Route::middleware(['auth', 'hr'])->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
-    // Modules still being moved from the Node/React version show a holding page until their controller lands.
-    // Employees reach attendance, leave, payroll, notifications and settings through ESS, so those stay open to every role.
-    $ported = ['/employees', '/leave', '/payroll', '/attendance', '/notifications', '/users', '/settings', '/recruitment', '/performance', '/training', '/relations', '/welfare', '/exit'];
-    $ess = ['/attendance', '/leave', '/payroll', '/notifications', '/settings'];
-    foreach (Navigation::modules() as $module) {
-        if (in_array($module['path'], $ported, true)) {
-            continue;
-        }
-        $name = trim($module['path'], '/');
-        $route = Route::view($module['path'], 'pending', ['module' => $module['label']])->name($name.'.index');
-        if (! in_array($module['path'], $ess, true)) {
-            $route->middleware('role:'.implode(',', $module['roles']));
-        }
-    }
+    // Contracts & documents and workforce planning (HR edits; department managers see their own people)
+    Route::middleware('role:HR_ADMIN,HR_MANAGER,DEPARTMENT_MANAGER')->group(function () {
+        Route::get('/contracts', [ContractController::class, 'index'])->name('contracts.index');
+        Route::get('/workforce', [WorkforceController::class, 'index'])->name('workforce.index');
+    });
+    Route::middleware('role:HR_ADMIN,HR_MANAGER')->group(function () {
+        Route::post('/contracts', [ContractController::class, 'store'])->name('contracts.store');
+        Route::patch('/contracts/{contract}', [ContractController::class, 'update'])->name('contracts.update');
+        Route::post('/workforce/budgets', [WorkforceController::class, 'saveBudget'])->name('workforce.budgets.save');
+        Route::post('/workforce/plans', [WorkforceController::class, 'storePlan'])->name('workforce.plans.store');
+        Route::delete('/workforce/plans/{plan}', [WorkforceController::class, 'destroyPlan'])->name('workforce.plans.destroy');
+    });
+
+    // Reports (each report covers only the people the viewer may see)
+    Route::get('/reports', ReportController::class)->name('reports.index')
+        ->middleware('role:HR_ADMIN,HR_MANAGER,DEPARTMENT_MANAGER,PAYROLL_OFFICER,SUPERVISOR,RECRUITMENT_OFFICER');
 });
