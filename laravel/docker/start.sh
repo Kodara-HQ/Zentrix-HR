@@ -20,6 +20,23 @@ if [ -z "$APP_KEY" ]; then
   APP_KEY="$(cat storage/app/private/.app_key)"
   export APP_KEY
 fi
+# Render's generated values are bare base64; Laravel expects the "base64:" prefix.
+case "$APP_KEY" in
+  base64:*) ;;
+  *) export APP_KEY="base64:${APP_KEY}" ;;
+esac
+
+# Hosted MySQL (Aiven, TiDB Cloud, …) needs TLS. Use the provider's CA certificate if one was pasted,
+# otherwise the system's public CA bundle. Set DB_SSL=false for a database without TLS.
+if [ "${DB_SSL:-true}" != "false" ] && [ -z "$MYSQL_ATTR_SSL_CA" ] && [ -n "$DB_URL" ]; then
+  if [ -n "$DB_SSL_CA_PEM" ]; then
+    printf '%b\n' "$DB_SSL_CA_PEM" > /etc/ssl/certs/db-ca.pem
+    export MYSQL_ATTR_SSL_CA=/etc/ssl/certs/db-ca.pem
+  else
+    export MYSQL_ATTR_SSL_CA=/etc/ssl/certs/ca-certificates.crt
+  fi
+fi
+
 # Render publishes the public address as RENDER_EXTERNAL_URL.
 if [ -z "$APP_URL" ] && [ -n "$RENDER_EXTERNAL_URL" ]; then
   export APP_URL="$RENDER_EXTERNAL_URL"

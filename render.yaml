@@ -1,7 +1,11 @@
-# Render Blueprint for Zentrix HR (Laravel + MySQL). In Render: New → Blueprint → pick this repo and the
-# "laravel" branch. Both services need a paid instance type because they keep data on a disk.
+# Render Blueprint for Zentrix HR (Laravel), free plan. In Render: New → Blueprint → this repo, "laravel" branch.
+#
+# The free plan has no disk and no MySQL, so:
+#   - the database is an outside MySQL 8 (for example Aiven's free MySQL); paste its URI as DB_URL when asked,
+#     and its CA certificate as DB_SSL_CA_PEM;
+#   - uploaded files are lost on each redeploy, and the app sleeps after ~15 idle minutes (the payroll and
+#     reminder schedule only runs while it is awake). Move to a paid plan with a disk before real use.
 services:
-  # The app: the Docker image in laravel/ (Apache + PHP 8.2), with uploads and letters on a disk.
   - type: web
     name: zentrix-hr
     runtime: docker
@@ -9,13 +13,9 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     branch: laravel
-    plan: starter
+    plan: free
     region: frankfurt
     healthCheckPath: /up
-    disk:
-      name: zentrix-storage
-      mountPath: /var/www/html/storage
-      sizeGB: 1
     envVars:
       - key: APP_NAME
         value: Zentrix HR
@@ -23,50 +23,21 @@ services:
         value: production
       - key: APP_DEBUG
         value: "false"
+      - key: APP_KEY
+        generateValue: true
       - key: LOG_CHANNEL
         value: stderr
       - key: SESSION_SECURE_COOKIE
         value: "true"
       - key: DB_CONNECTION
         value: mysql
-      - key: DB_HOST
-        fromService:
-          name: zentrix-mysql
-          type: pserv
-          property: host
-      - key: DB_PORT
-        value: "3306"
-      - key: DB_DATABASE
-        value: zentrix_hr
-      - key: DB_USERNAME
-        value: zentrix
-      - key: DB_PASSWORD
-        fromService:
-          name: zentrix-mysql
-          type: pserv
-          envVarKey: MYSQL_PASSWORD
-      # Optional: the key the fingerprint clock sends. Set it in the dashboard if you use a clock.
+      # mysql://user:password@host:port/database from the MySQL provider. Entered in the dashboard, never in git.
+      - key: DB_URL
+        sync: false
+      # The provider's CA certificate (the whole -----BEGIN CERTIFICATE----- block). Leave empty if the
+      # provider uses a public certificate authority (TiDB Cloud does).
+      - key: DB_SSL_CA_PEM
+        sync: false
+      # Optional: the key the fingerprint clock sends with each punch.
       - key: BIOMETRIC_DEVICE_KEY
         sync: false
-
-  # MySQL 8, reachable only by the app over Render's private network.
-  - type: pserv
-    name: zentrix-mysql
-    runtime: image
-    image:
-      url: docker.io/library/mysql:8.0
-    plan: starter
-    region: frankfurt
-    disk:
-      name: zentrix-mysql-data
-      mountPath: /var/lib/mysql
-      sizeGB: 5
-    envVars:
-      - key: MYSQL_DATABASE
-        value: zentrix_hr
-      - key: MYSQL_USER
-        value: zentrix
-      - key: MYSQL_PASSWORD
-        generateValue: true
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
