@@ -59,6 +59,11 @@ until php artisan migrate --force; do
   sleep 3
 done
 php artisan db:seed --force          # settings every install needs; safe to run on every start
+# Trial sites only: SEED_DEMO=true adds the sample company (18 staff and the "test" admin, all with the
+# demo password from DemoSeeder). It skips itself once employees exist. Never set this on a real system.
+if [ "$SEED_DEMO" = "true" ]; then
+  php artisan db:seed --class=DemoSeeder --force
+fi
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
