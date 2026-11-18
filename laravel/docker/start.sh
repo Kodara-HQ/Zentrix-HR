@@ -64,6 +64,13 @@ php artisan db:seed --force          # settings every install needs; safe to run
 if [ "$SEED_DEMO" = "true" ]; then
   php artisan db:seed --class=DemoSeeder --force
 fi
+# First administrator from the host's settings. Created once; later starts leave it alone, so a password
+# changed in the app is never reset. ADMIN_PASSWORD is a secret set in the host's dashboard, never in git.
+if [ -n "$ADMIN_USERNAME" ] && [ -n "$ADMIN_PASSWORD" ]; then
+  php artisan hr:admin ${ADMIN_EMAIL:+"$ADMIN_EMAIL"} --username="$ADMIN_USERNAME" \
+    --first="${ADMIN_FIRST_NAME:-System}" --last="${ADMIN_LAST_NAME:-Administrator}" \
+    --password="$ADMIN_PASSWORD" --if-missing
+fi
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

@@ -34,6 +34,16 @@ services:
       # database) before using it for real staff.
       - key: SEED_DEMO
         value: "true"
+      # First administrator, created once on start (must change the password at first sign-in).
+      # ADMIN_PASSWORD is entered in the Render dashboard only.
+      - key: ADMIN_USERNAME
+        value: Lam
+      - key: ADMIN_FIRST_NAME
+        value: Emmanuel
+      - key: ADMIN_LAST_NAME
+        value: Lamadeku
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
