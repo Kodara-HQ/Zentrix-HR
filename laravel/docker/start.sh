@@ -28,7 +28,13 @@ esac
 
 # Hosted MySQL (Aiven, TiDB Cloud, …) needs TLS. Use the provider's CA certificate if one was pasted,
 # otherwise the system's public CA bundle. Set DB_SSL=false for a database without TLS.
-if [ "${DB_SSL:-true}" != "false" ] && [ -z "$MYSQL_ATTR_SSL_CA" ] && [ -n "$DB_URL" ]; then
+remote_db=""
+if [ -n "$DB_URL" ]; then remote_db=1; fi
+case "${DB_HOST:-127.0.0.1}" in
+  127.0.0.1|localhost|mysql|db) ;;
+  *) remote_db=1 ;;
+esac
+if [ "${DB_SSL:-true}" != "false" ] && [ -z "$MYSQL_ATTR_SSL_CA" ] && [ -n "$remote_db" ]; then
   if [ -n "$DB_SSL_CA_PEM" ]; then
     printf '%b\n' "$DB_SSL_CA_PEM" > /etc/ssl/certs/db-ca.pem
     export MYSQL_ATTR_SSL_CA=/etc/ssl/certs/db-ca.pem

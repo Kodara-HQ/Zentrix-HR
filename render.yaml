@@ -1,8 +1,9 @@
 # Render Blueprint for Zentrix HR (Laravel), free plan. In Render: New → Blueprint → this repo, "laravel" branch.
 #
-# The free plan has no disk and no MySQL, so:
-#   - the database is an outside MySQL 8 (for example Aiven's free MySQL); paste its URI as DB_URL when asked,
-#     and its CA certificate as DB_SSL_CA_PEM;
+# The free plan has no disk and no database, so:
+#   - the database is TiDB Cloud's free Starter instance "zentrix-hr" (MySQL-compatible, Frankfurt). Its host,
+#     port, user and database are below; only the password is entered in the Render dashboard (DB_PASSWORD).
+#     TiDB requires TLS with a public certificate, which the container uses automatically;
 #   - uploaded files are lost on each redeploy, and the app sleeps after ~15 idle minutes (the payroll and
 #     reminder schedule only runs while it is awake). Move to a paid plan with a disk before real use.
 services:
@@ -31,11 +32,18 @@ services:
         value: "true"
       - key: DB_CONNECTION
         value: mysql
-      # mysql://user:password@host:port/database from the MySQL provider. Entered in the dashboard, never in git.
-      - key: DB_URL
+      - key: DB_HOST
+        value: gateway01.eu-central-1.prod.aws.tidbcloud.com
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_DATABASE
+        value: zentrix_hr
+      - key: DB_USERNAME
+        value: 3wg7TG7dWjxhpRf.root
+      # The TiDB password (TiDB console → Connect → Generate Password). Entered in the dashboard, never in git.
+      - key: DB_PASSWORD
         sync: false
-      # The provider's CA certificate (the whole -----BEGIN CERTIFICATE----- block). Leave empty if the
-      # provider uses a public certificate authority (TiDB Cloud does).
+      # Only for a provider with its own CA certificate (Aiven etc.); leave empty for TiDB.
       - key: DB_SSL_CA_PEM
         sync: false
       # Optional: the key the fingerprint clock sends with each punch.
