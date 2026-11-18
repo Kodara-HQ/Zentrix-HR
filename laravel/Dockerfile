@@ -39,4 +39,4 @@ RUN php artisan package:discover --ansi \
  && chmod +x docker/start.sh
 
 EXPOSE 8080
-CMD ["docker/start.sh"]
+CMD ["sh", "/var/www/html/docker/start.sh"]
