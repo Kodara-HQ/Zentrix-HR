@@ -36,31 +36,47 @@ class DemoSeeder extends Seeder
     {
         $this->call(ReferenceDataSeeder::class);
 
-        // The demo staff go into the first company.
-        Tenant::run(Company::orderBy('id')->value('id'), fn () => $this->fill($employees));
+        // On a new installation the demo staff go into the first company, with a "test" administrator.
+        $company = Company::orderBy('id')->first();
+        Tenant::run($company->id, function () use ($employees, $company) {
+            User::firstOrCreate(['username' => 'test'], [
+                'email' => 'test@zentrix.test', 'password_hash' => Hash::make(self::PASSWORD), 'role' => 'SUPER_ADMIN',
+                'first_name' => 'Test', 'last_name' => 'Administrator', 'is_active' => true, 'must_change_password' => false,
+            ]);
+            $this->forCompany($company->fresh(), $employees, 'zentrix.gh');
+        });
     }
 
-    private function fill(EmployeeService $employees): void
+    /**
+     * Adds the 18 demo staff (with sign-ins, attendance, pay items, ...) to a company that has no employees yet.
+     * Sign-in emails must be unique across all companies, so each company's demo staff use their own email domain.
+     * Returns false when the company already has employees.
+     */
+    public function forCompany(Company $company, EmployeeService $employees, string $domain): bool
     {
-        // A test administrator that is not tied to a staff record (sign in as "test").
-        User::firstOrCreate(['username' => 'test'], [
-            'email' => 'test@zentrix.test', 'password_hash' => Hash::make(self::PASSWORD), 'role' => 'SUPER_ADMIN',
-            'first_name' => 'Test', 'last_name' => 'Administrator', 'is_active' => true, 'must_change_password' => false,
-        ]);
+        return Tenant::run($company->id, function () use ($company, $employees, $domain) {
+            if (Employee::exists()) {
+                $this->command?->warn("{$company->name} already has employees; the demo data was not added.");
 
-        if (Employee::exists()) {
-            $this->command?->warn('Employees already exist; the demo data was not added.');
+                return false;
+            }
+            app(\App\Services\CompanySetup::class)->addReferenceData();
+            $this->fill($company, $employees, $domain);
 
-            return;
-        }
+            return true;
+        });
+    }
+
+    private function fill(Company $company, EmployeeService $employees, string $domain): void
+    {
 
         $today = CarbonImmutable::today();
         $birthday = fn (int $daysAhead, int $year) => $today->addDays($daysAhead)->setYear($year)->toDateString();
 
-        Tenant::company()->update([
-            'name' => 'Zentrix HR', 'legal_name' => 'Zentrix HR', 'tin' => 'C0012345678', 'ssnit_employer_no' => 'ER-ML-20418',
-            'email' => 'hr@zentrix.gh', 'phone' => '+233 30 200 0100', 'address' => '14 Liberation Road, Airport City', 'city' => 'Accra', 'next_employee_no' => 19,
-        ]);
+        // Fill in profile details the company does not have yet; its name and colours stay as they are.
+        $profile = ['tin' => 'C0012345678', 'ssnit_employer_no' => 'ER-ML-20418', 'email' => "hr@{$domain}", 'phone' => '+233 30 200 0100',
+            'address' => '14 Liberation Road, Airport City', 'city' => 'Accra'];
+        $company->update(array_filter($profile, fn ($value, $key) => blank($company->{$key}), ARRAY_FILTER_USE_BOTH) + ['next_employee_no' => 19]);
 
         $departments = [];
         foreach (['HR' => 'Human Resources', 'FIN' => 'Finance', 'OPS' => 'Operations', 'IT' => 'Information Technology', 'COM' => 'Commercial', 'WH' => 'Warehouse'] as $code => $name) {
@@ -123,7 +139,7 @@ class DemoSeeder extends Seeder
 
             $employee = Employee::create([
                 'employee_no' => $no, 'first_name' => $first, 'last_name' => $last, 'gender' => $gender, 'date_of_birth' => $dob,
-                'email' => strtolower("{$first}.{$last}@zentrix.gh"), 'phone' => $phone,
+                'email' => strtolower("{$first}.{$last}@{$domain}"), 'phone' => $phone,
                 'address' => match ($location) { 'Tema Port' => 'Community 5, Tema', 'Kumasi Depot' => 'Asafo, Kumasi', default => 'East Legon, Accra' },
                 'city' => $city, 'region' => $location === 'Kumasi Depot' ? 'Ashanti' : 'Greater Accra',
                 'emergency_name' => "{$last} family", 'emergency_phone' => str_replace('100', '200', $phone), 'emergency_relation' => 'Sibling',
@@ -140,7 +156,7 @@ class DemoSeeder extends Seeder
                 'employee_id' => $employee->id, 'department_id' => $employee->department_id, 'location_id' => $employee->location_id,
                 'is_active' => $status !== 'RESIGNED', 'must_change_password' => false,
             ]);
-            EmployeeEvent::create(['employee_id' => $employee->id, 'type' => EventType::HIRE, 'title' => 'Joined Zentrix HR', 'effective_date' => $hired, 'to_value' => ['employeeNo' => $no, 'title' => $title]]);
+            EmployeeEvent::create(['employee_id' => $employee->id, 'type' => EventType::HIRE, 'title' => "Joined {$company->name}", 'effective_date' => $hired, 'to_value' => ['employeeNo' => $no, 'title' => $title]]);
             EmployeeEducation::create([
                 'employee_id' => $employee->id,
                 'institution' => $dept === 'IT' ? 'Kwame Nkrumah University of Science and Technology' : 'University of Ghana',
@@ -185,6 +201,6 @@ class DemoSeeder extends Seeder
         }
 
         $this->call(DemoAttendanceSeeder::class);
-        $this->command?->info('Added Zentrix HR with '.count($people).' employees. Every demo account signs in with Hris@2026.');
+        $this->command?->info("Added ".count($people)." employees to {$company->name}. Every demo account signs in with ".self::PASSWORD.'.');
     }
 }

@@ -33,6 +33,7 @@ Route::post('/api/time/biometric/punch', [AttendanceController::class, 'biometri
 Route::get('/cron/daily', [CronController::class, 'daily'])->middleware('throttle:10,1');
 // Database changes after a deploy, for hosts without a shell (same secret).
 Route::get('/cron/migrate', [CronController::class, 'migrate'])->middleware('throttle:10,1');
+Route::get('/cron/demo', [CronController::class, 'demo'])->middleware('throttle:10,1');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

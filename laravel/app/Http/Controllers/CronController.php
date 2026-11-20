@@ -42,6 +42,17 @@ class CronController extends Controller
         return response()->json($results);
     }
 
+    /** Adds the demo staff to a company with no employees yet: `?company=<name or id>`. */
+    public function demo(Request $request): JsonResponse
+    {
+        $this->authorizeCron($request);
+        @set_time_limit(0);
+
+        $ok = Artisan::call('hr:demo', ['company' => (string) $request->query('company')]) === 0;
+
+        return response()->json(['demo' => $ok ? 'ok' : 'failed', 'output' => trim(Artisan::output())], $ok ? 200 : 422);
+    }
+
     private function authorizeCron(Request $request): void
     {
         $secret = (string) config('services.cron.secret');

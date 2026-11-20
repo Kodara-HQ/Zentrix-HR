@@ -138,6 +138,27 @@ class CompaniesTest extends TestCase
         $this->actingAs($otherHr)->get('/employees')->assertOk()->assertSee('--color-navy:#4a1426;', false)->assertSee('--color-accent-strong:#a3264b;', false);
     }
 
+    public function test_demo_staff_can_be_added_to_any_empty_company(): void
+    {
+        $this->seed(\Database\Seeders\DemoSeeder::class); // the first company, as on a new installation
+        $danlice = app(CompanySetup::class)->create(['name' => 'Danlice HR', 'legal_name' => 'Danlice HR Ltd', 'theme_primary' => '#173d2c']);
+        Tenant::forget();
+
+        $this->assertSame('danlice.gh', \App\Console\Commands\AddDemoData::domain('Danlice HR'));
+        $this->artisan('hr:demo', ['company' => 'Danlice HR'])->assertSuccessful();
+        $this->artisan('hr:demo', ['company' => 'Danlice HR'])->assertFailed(); // only once
+        $this->artisan('hr:demo', ['company' => 'Nobody'])->assertFailed();
+
+        $count = fn (string $model) => $model::withoutGlobalScope('company')->where('company_id', $danlice->id)->count();
+        $this->assertSame([18, 18], [$count(Employee::class), $count(User::class)]);
+        $this->assertGreaterThan(0, $count(\App\Models\AttendanceRecord::class));
+        $this->assertSame(['Danlice HR', '#173d2c'], [$danlice->fresh()->name, $danlice->fresh()->theme_primary]);
+
+        // Its staff sign in to their own company only.
+        $this->post('/login', ['email' => 'kojo.mensah@danlice.gh', 'password' => \Database\Seeders\DemoSeeder::PASSWORD])->assertRedirect('/');
+        $this->get('/employees')->assertOk()->assertSee('danlice.gh')->assertDontSee('zentrix.gh');
+    }
+
     public function test_a_suspended_company_cannot_sign_in(): void
     {
         [$hr, , $other] = $this->twoCompanies();
