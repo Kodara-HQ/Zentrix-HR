@@ -41,4 +41,9 @@ return [
         ],
     ],
 
+    // Shared secret for the daily cron address (/cron/daily); Vercel sends it as a Bearer token.
+    'cron' => [
+        'secret' => env('CRON_SECRET'),
+    ],
+
 ];

@@ -12,6 +12,7 @@ use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\CronController;
 use App\Http\Controllers\RelationsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\WorkforceController;
@@ -26,6 +27,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('/api/time/biometric/punch', [AttendanceController::class, 'biometric'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->middleware('throttle:120,1');
+
+// Daily payroll and reminders, called by Vercel Cron (protected by CRON_SECRET).
+Route::get('/cron/daily', [CronController::class, 'daily'])->middleware('throttle:10,1');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
