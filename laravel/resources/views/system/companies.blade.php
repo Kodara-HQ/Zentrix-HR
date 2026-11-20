@@ -17,7 +17,8 @@
                     @forelse ($companies as $company)
                         <tr class="border-t border-line align-middle {{ $company->is_active ? '' : 'text-muted' }}">
                             <td class="px-3 py-2.5">
-                                <div class="font-semibold text-ink">{{ $company->name }}@if ($acting === $company->id) <span class="ml-1 rounded-full bg-sky px-1.5 text-xs font-semibold text-navy">Open</span>@endif</div>
+                                @php([$p, $a] = $company->themeColours())
+                                <div class="flex items-center gap-2 font-semibold text-ink"><span class="flex shrink-0 overflow-hidden rounded" title="Company colours"><span class="h-4 w-2.5" style="background: {{ $p }}"></span><span class="h-4 w-2.5" style="background: {{ $a }}"></span></span>{{ $company->name }}@if ($acting === $company->id) <span class="ml-1 rounded-full bg-sky px-1.5 text-xs font-semibold text-navy">Open</span>@endif</div>
                                 @if ($company->legal_name !== $company->name)<div class="text-xs text-muted">{{ $company->legal_name }}</div>@endif
                             </td>
                             <td class="px-3 py-2.5">{{ collect([$company->city, $company->country])->filter()->join(', ') ?: '—' }}</td>

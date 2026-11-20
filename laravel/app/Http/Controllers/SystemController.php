@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\CompanySetup;
 use App\Support\Audit;
 use App\Support\Tenant;
+use App\Support\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -82,6 +83,8 @@ class SystemController extends Controller
             'city' => ['nullable', 'string', 'max:191'],
             'country' => ['required', 'string', 'max:191'],
             'currency' => ['required', 'string', 'size:3'],
+            'theme_primary' => ['nullable', 'string', Theme::rule('The main colour')],
+            'theme_accent' => ['nullable', 'string', Theme::rule('The accent colour')],
         ], ['name.unique' => 'Another company already has that name.']);
     }
 }

@@ -26,6 +26,15 @@ class Company extends Model
         ];
     }
 
+    /** Colours as the form shows them, with the standard ones when none are set. */
+    public function themeColours(): array
+    {
+        return [
+            $this->theme_primary ?: \App\Support\Theme::DEFAULT_PRIMARY,
+            $this->theme_accent ?: \App\Support\Theme::DEFAULT_ACCENT,
+        ];
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'company_id')->withoutGlobalScope('company');

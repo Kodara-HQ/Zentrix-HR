@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Notification;
 use App\Support\Tenant;
+use App\Support\Theme;
 use App\Support\TenantPresenceVerifier;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -36,9 +37,10 @@ class AppServiceProvider extends ServiceProvider
         // Company name and unread count appear in every layout.
         View::composer(['components.layouts.*', 'auth.*'], function ($view) {
             $user = auth()->user();
-            $company = rescue(fn () => Tenant::name(), 'Zentrix HR', false);
+            $record = rescue(fn () => Tenant::company(), null, false);
             $view->with([
-                'company' => $company,
+                'company' => $record?->name ?: 'Zentrix HR',
+                'themeCss' => Theme::css($record),
                 'unread' => $user ? Notification::where('user_id', $user->id)->whereNull('read_at')->count() : 0,
             ]);
         });

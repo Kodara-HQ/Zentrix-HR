@@ -119,6 +119,25 @@ class CompaniesTest extends TestCase
         $this->assertNull($root->fresh()->company_id);
     }
 
+    public function test_each_company_gets_its_own_colours(): void
+    {
+        [$hr, , $other] = $this->twoCompanies();
+        $root = $this->systemAdmin();
+        Tenant::forget();
+        $fields = ['name' => 'Other Ltd', 'legal_name' => 'Other Limited', 'country' => 'Ghana', 'currency' => 'GHS'];
+
+        $this->actingAs($root)->patch("/system/companies/{$other->id}", $fields + ['theme_primary' => '#ffffcc', 'theme_accent' => '#0f7c83', 'is_active' => '1'])
+            ->assertSessionHasErrors('theme_primary');
+        $this->actingAs($root)->patch("/system/companies/{$other->id}", $fields + ['theme_primary' => '#4a1426', 'theme_accent' => '#a3264b', 'is_active' => '1'])
+            ->assertSessionHasNoErrors();
+
+        // The first company keeps the standard colours; the other company's pages use its own.
+        $this->actingAs($hr)->get('/employees')->assertOk()->assertDontSee('--color-navy:#4a1426', false);
+        $otherHr = Tenant::run($other->id, fn () => $this->makeUser(Role::HR_ADMIN));
+        Tenant::forget();
+        $this->actingAs($otherHr)->get('/employees')->assertOk()->assertSee('--color-navy:#4a1426;', false)->assertSee('--color-accent-strong:#a3264b;', false);
+    }
+
     public function test_a_suspended_company_cannot_sign_in(): void
     {
         [$hr, , $other] = $this->twoCompanies();
