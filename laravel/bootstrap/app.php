@@ -21,5 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Hosts like Vercel cut long log lines, which hides the message at the start of a stack trace.
+        // Also write one short line per error so the cause is always readable.
+        $exceptions->report(function (\Throwable $e): void {
+            error_log('[error] '.get_class($e).': '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+        });
     })->create();
