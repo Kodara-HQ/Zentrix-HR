@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Company;
 use App\Models\PayrollRun;
 use App\Services\PayrollService;
+use App\Support\Tenant;
 use Illuminate\Console\Command;
 
 /**
@@ -23,14 +25,18 @@ class ProcessPayrollMonth extends Command
         $month = (int) ($this->option('month') ?: now()->month);
         $period = PayrollService::period($year, $month);
 
-        if ($run = PayrollRun::where(compact('year', 'month'))->first()) {
-            $this->line("{$period} already exists ({$run->status->value}); nothing to do.");
+        foreach (Company::where('is_active', true)->get() as $company) {
+            Tenant::run($company->id, function () use ($payroll, $year, $month, $period, $company) {
+                if ($run = PayrollRun::where(compact('year', 'month'))->first()) {
+                    $this->line("{$company->name}: {$period} already exists ({$run->status->value}); nothing to do.");
 
-            return self::SUCCESS;
+                    return;
+                }
+
+                $run = $payroll->process($year, $month, null, 'Generated automatically for the month.');
+                $this->info("{$company->name}: {$period} calculated for {$run->payslips()->count()} employees and is waiting for HR approval.");
+            });
         }
-
-        $run = $payroll->process($year, $month, null, 'Generated automatically for the month.');
-        $this->info("{$period} calculated for {$run->payslips()->count()} employees and is waiting for HR approval.");
 
         return self::SUCCESS;
     }

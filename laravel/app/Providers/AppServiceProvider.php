@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use App\Models\Company;
 use App\Models\Notification;
+use App\Support\Tenant;
+use App\Support\TenantPresenceVerifier;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -27,11 +28,15 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // exists: and unique: rules only see the current company's rows.
+        $this->callAfterResolving('validator', function ($factory, $app) {
+            $factory->setPresenceVerifier(new TenantPresenceVerifier($app['db']));
+        });
+
         // Company name and unread count appear in every layout.
         View::composer(['components.layouts.*', 'auth.*'], function ($view) {
-            static $company = null;
-            $company ??= rescue(fn () => Company::query()->value('name'), null, false) ?: 'Zentrix HR';
             $user = auth()->user();
+            $company = rescue(fn () => Tenant::name(), 'Zentrix HR', false);
             $view->with([
                 'company' => $company,
                 'unread' => $user ? Notification::where('user_id', $user->id)->whereNull('read_at')->count() : 0,

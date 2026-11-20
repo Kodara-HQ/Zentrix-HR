@@ -7,6 +7,8 @@
     $user = auth()->user();
     $staff = $user->role === Role::EMPLOYEE;
     $items = Navigation::for($user);
+    // A system administrator outside any company only has the Companies pages.
+    $system = $user->isSystemAdmin() && ! $user->actingInCompany;
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -74,6 +76,8 @@
                     <div class="text-xs font-semibold tracking-[0.18em] text-accent-strong">ESS</div>
                     <div class="truncate text-sm font-semibold text-navy">Employee Self Service Portal</div>
                 </div>
+            @elseif ($system)
+                <div class="min-w-0 truncate text-sm font-semibold text-navy">System administration</div>
             @else
                 <form action="{{ url('/employees') }}" method="get" class="hidden min-w-0 flex-1 md:block">
                     <input name="search" value="{{ request('search') }}" placeholder="Search employees by name or number"
@@ -81,13 +85,15 @@
                 </form>
             @endif
             <div class="ml-auto flex items-center gap-1 sm:gap-2">
+                @unless ($system)
                 <a href="{{ url('/notifications') }}" class="relative rounded-lg p-2 text-navy hover:bg-cream" title="Notifications">
                     <x-lucide-bell class="h-[18px] w-[18px]" />
                     @if ($unread > 0)<span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent-strong"></span>@endif
                 </a>
+                @endunless
                 <div class="min-w-0 px-1 text-right leading-tight">
                     <div class="truncate text-sm font-semibold text-navy">{{ $user->first_name }} {{ $user->last_name }}</div>
-                    <div class="text-xs text-muted">{{ Format::role($user->role) }}</div>
+                    <div class="text-xs text-muted">{{ Format::role($user->isSystemAdmin() ? Role::SYSTEM_ADMIN : $user->role) }}</div>
                 </div>
                 <form method="post" action="{{ route('logout') }}">
                     @csrf
@@ -95,6 +101,16 @@
                 </form>
             </div>
         </header>
+        @if ($user->actingInCompany)
+            <div class="no-print flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line bg-sky px-4 py-2 text-sm text-navy md:px-6">
+                <x-lucide-building-2 class="h-4 w-4 shrink-0" />
+                <span>You are working in <strong>{{ $company }}</strong> as the system administrator.</span>
+                <form method="post" action="{{ route('system.companies.leave') }}" class="ml-auto">
+                    @csrf
+                    <button class="font-semibold text-accent-strong">Back to companies</button>
+                </form>
+            </div>
+        @endif
         <main class="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 py-5 md:px-6">
             @if (session('status'))
                 <div class="mb-4 rounded-lg border border-sky-text bg-sky px-3 py-2 text-sm text-navy">{{ session('status') }}</div>

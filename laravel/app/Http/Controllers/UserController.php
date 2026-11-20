@@ -112,7 +112,7 @@ class UserController extends Controller
             'full_name' => ['required', 'string', 'min:2', 'max:191'],
             'username' => ['required', 'string', 'min:3', 'max:60', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique('users', 'username')->ignore($user?->id)],
             'email' => ['nullable', 'email', 'max:191', Rule::unique('users', 'email')->ignore($user?->id)],
-            'role' => ['required', Rule::enum(Role::class)],
+            'role' => ['required', Rule::enum(Role::class)->except([Role::SYSTEM_ADMIN])],
             'employee_id' => ['nullable', 'exists:employees,id', Rule::unique('users', 'employee_id')->ignore($user?->id)],
         ], [
             'username.unique' => 'That username is already in use.',

@@ -3,7 +3,7 @@
     use App\Support\Format;
     $me = auth()->user();
     $form = old('_form');
-    $roles = collect(Role::cases())->mapWithKeys(fn ($r) => [$r->value => Format::role($r)])->all();
+    $roles = collect(Role::cases())->reject(fn ($r) => $r === Role::SYSTEM_ADMIN)->mapWithKeys(fn ($r) => [$r->value => Format::role($r)])->all();
     $name = fn ($u) => $u->first_name === $u->last_name ? $u->first_name : "{$u->first_name} {$u->last_name}";
 @endphp
 <x-layouts.app title="User management">

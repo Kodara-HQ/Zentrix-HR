@@ -36,6 +36,15 @@ class Navigation
 
     public static function for(User $user): array
     {
+        if ($user->isSystemAdmin()) {
+            $companies = ['path' => '/system/companies', 'label' => 'Companies', 'icon' => 'building-2'];
+            if (! $user->actingInCompany) {
+                return [$companies];
+            }
+
+            return [$companies, ...array_values(array_filter(self::ITEMS, fn ($item) => Access::hasRole($user, $item['roles'])))];
+        }
+
         if ($user->role === Role::EMPLOYEE) {
             return array_values(array_filter([
                 ['path' => '/', 'label' => 'Home', 'icon' => 'layout-dashboard'],

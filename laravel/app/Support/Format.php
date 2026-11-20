@@ -9,6 +9,7 @@ use DateTimeInterface;
 class Format
 {
     public const ROLE_LABELS = [
+        'SYSTEM_ADMIN' => 'System administrator',
         'SUPER_ADMIN' => 'Super administrator',
         'HR_ADMIN' => 'HR administrator',
         'HR_MANAGER' => 'HR manager',

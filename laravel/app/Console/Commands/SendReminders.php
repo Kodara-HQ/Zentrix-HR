@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\EventType;
 use App\Enums\Role;
 use App\Models\Certification;
+use App\Models\Company;
 use App\Models\Contract;
 use App\Models\DisciplinaryCase;
 use App\Models\Employee;
@@ -15,6 +16,7 @@ use App\Models\TrainingProgram;
 use App\Models\User;
 use App\Services\Notifier;
 use App\Support\Format;
+use App\Support\Tenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +32,17 @@ class SendReminders extends Command
     protected $description = 'Send upcoming-event reminders, confirm finished probations and complete due exits';
 
     public function handle(Notifier $notifier): int
+    {
+        foreach (Company::where('is_active', true)->get() as $company) {
+            $this->line($company->name.':');
+            Tenant::run($company->id, fn () => $this->forCompany($notifier));
+        }
+
+        return self::SUCCESS;
+    }
+
+    /** Reminders and housekeeping for the current company. */
+    private function forCompany(Notifier $notifier): void
     {
         $today = CarbonImmutable::today();
         $d = fn ($date) => CarbonImmutable::parse($date)->toDateString();
@@ -103,7 +116,5 @@ class SendReminders extends Command
         }
 
         $this->info("Checked {$sent} reminders, completed {$exits} exits, confirmed {$confirmed} probations.");
-
-        return self::SUCCESS;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\LetterType;
 use App\Models\Company;
+use App\Support\Tenant;
 use App\Models\Employee;
 use App\Models\FileAsset;
 use App\Models\HrLetter;
@@ -18,7 +19,7 @@ class Letters
     /** @param  string[]  $paragraphs */
     public function issue(Employee $employee, LetterType $type, string $subject, string $issuedOn, array $paragraphs): ?HrLetter
     {
-        $company = Company::first();
+        $company = Tenant::company();
         if (! $company) {
             return null;
         }

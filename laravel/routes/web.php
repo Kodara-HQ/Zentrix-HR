@@ -19,6 +19,7 @@ use App\Http\Controllers\WorkforceController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\WelfareController;
 use App\Http\Controllers\ExitController;
+use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
 use App\Support\Navigation;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,8 @@ Route::post('/api/time/biometric/punch', [AttendanceController::class, 'biometri
 
 // Daily payroll and reminders, called by Vercel Cron (protected by CRON_SECRET).
 Route::get('/cron/daily', [CronController::class, 'daily'])->middleware('throttle:10,1');
+// Database changes after a deploy, for hosts without a shell (same secret).
+Route::get('/cron/migrate', [CronController::class, 'migrate'])->middleware('throttle:10,1');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -42,6 +45,13 @@ Route::middleware(['auth', 'hr'])->group(function () {
     Route::put('/password', [AuthController::class, 'updatePassword'])->name('password.update');
 
     Route::get('/', DashboardController::class)->name('dashboard');
+
+    // Companies (system administrator only; HrPortal enforces it for every system.* route)
+    Route::get('/system/companies', [SystemController::class, 'index'])->name('system.companies.index');
+    Route::post('/system/companies', [SystemController::class, 'store'])->name('system.companies.store');
+    Route::patch('/system/companies/{company}', [SystemController::class, 'update'])->name('system.companies.update');
+    Route::post('/system/companies/{company}/open', [SystemController::class, 'open'])->name('system.companies.open');
+    Route::post('/system/leave', [SystemController::class, 'leave'])->name('system.companies.leave');
 
     // Employees
     $writers = 'role:HR_ADMIN,HR_MANAGER';

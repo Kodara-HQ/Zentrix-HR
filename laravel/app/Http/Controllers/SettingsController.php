@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Role;
 use App\Models\AuditLog;
-use App\Models\Company;
+use App\Support\Tenant;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
@@ -60,13 +60,13 @@ class SettingsController extends Controller
         }
 
         return view('settings.index', $data + match ($tab) {
-            'company' => ['company' => Company::first()],
+            'company' => ['company' => Tenant::company()],
             'hours' => ['calendar' => WorkingCalendar::where('is_active', true)->first()],
             'workflows' => ['workflows' => WorkflowConfig::orderBy('label')->get()],
             'notifications' => ['notices' => NotificationSetting::orderBy('label')->get(), 'mailReady' => config('mail.default') !== 'log'],
             'tax' => ['configs' => StatutoryConfig::orderByDesc('effective_from')->get()],
             'audit' => ['logs' => AuditLog::latest()->paginate(30)->withQueryString(), 'actors' => User::pluck('first_name', 'id')],
-            'backup' => ['backups' => collect(Storage::files('backups'))->sortDesc()->take(10)->values()],
+            'backup' => ['backups' => collect(Storage::files(self::backupFolder()))->sortDesc()->take(10)->values()],
             default => [],
         });
     }
@@ -84,7 +84,8 @@ class SettingsController extends Controller
             'city' => ['nullable', 'string', 'max:191'],
             'country' => ['required', 'string', 'max:191'],
         ]);
-        $company = Company::first() ?? new Company(['next_employee_no' => 1, 'currency' => 'GHS']);
+        $company = Tenant::company();
+        abort_unless($company, 404);
         $company->fill($data)->save();
         Audit::log('UPDATE', 'Company', $company->id, 'Company profile updated');
 
@@ -184,7 +185,7 @@ class SettingsController extends Controller
     {
         $snapshot = [
             'exported_at' => now()->toIso8601String(),
-            'company' => Company::all(),
+            'company' => Tenant::company(),
             'departments' => Department::all(),
             'employees' => Employee::all(),
             'users' => User::all(['id', 'email', 'username', 'role', 'first_name', 'last_name', 'is_active']),
@@ -192,7 +193,7 @@ class SettingsController extends Controller
             'leave_requests' => LeaveRequest::all(),
             'payroll_runs' => PayrollRun::with('payslips')->get(),
         ];
-        $file = 'backups/zentrix-hr-'.now()->format('Y-m-d-His').'.json';
+        $file = self::backupFolder().'/zentrix-hr-'.now()->format('Y-m-d-His').'.json';
         Storage::put($file, json_encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         Audit::log('CREATE', 'Backup', null, 'Backup written: '.basename($file));
 
@@ -201,10 +202,16 @@ class SettingsController extends Controller
 
     public function downloadBackup(string $file)
     {
-        $path = 'backups/'.basename($file);
+        $path = self::backupFolder().'/'.basename($file);
         abort_unless(Storage::exists($path), 404);
 
         return Storage::download($path);
+    }
+
+    /** Each company's backups are kept apart. */
+    private static function backupFolder(): string
+    {
+        return 'backups/'.Tenant::id();
     }
 
     private function fillAndSave(Request $request, array $config, $item, string $list): void

@@ -3,18 +3,40 @@
 namespace Tests;
 
 use App\Enums\Role;
+use App\Models\Company;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\EmploymentType;
 use App\Models\JobTitle;
 use App\Models\User;
 use App\Models\WorkLocation;
+use App\Support\Tenant;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 abstract class TestCase extends BaseTestCase
 {
+    /** Every test works inside this company unless it calls Tenant::forget() or Tenant::set(). */
+    protected ?Company $company = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Tenant::forget();
+        if (in_array(RefreshDatabase::class, class_uses_recursive($this), true)) {
+            $this->company = Company::create(['name' => 'Test Company', 'legal_name' => 'Test Company Ltd', 'next_employee_no' => 1]);
+            Tenant::set($this->company->id);
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        Tenant::forget();
+        parent::tearDown();
+    }
+
     protected function makeUser(Role $role = Role::HR_ADMIN, array $attributes = []): User
     {
         return User::create($attributes + [

@@ -31,6 +31,9 @@ class AuthController extends Controller
         if (! $user || ! $user->is_active || ! password_verify($data['password'], $user->password_hash)) {
             return back()->withErrors(['email' => 'Email or password is incorrect.'])->onlyInput('email');
         }
+        if ($user->company_id && ! \App\Models\Company::whereKey($user->company_id)->value('is_active')) {
+            return back()->withErrors(['email' => "Your company's account is suspended. Contact the system administrator."])->onlyInput('email');
+        }
 
         Auth::login($user);
         $request->session()->regenerate();

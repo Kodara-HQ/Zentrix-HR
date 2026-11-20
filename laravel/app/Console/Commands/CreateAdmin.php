@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Creates a super administrator (the database starts without users) or resets an existing one's password.
+ * Creates a system administrator (the database starts without users; they then set up companies) or resets an existing one's password.
  * Find the account by email (argument) or --username. With --if-missing an existing account is left
  * untouched, so the container can run this on every start without undoing a changed password.
  * Replaces RESET_USER_EMAIL / RESET_USER_PASSWORD from the Node version.
@@ -23,7 +23,7 @@ class CreateAdmin extends Command
         {--password= : Leave empty to generate one}
         {--if-missing : Do nothing when the account already exists}';
 
-    protected $description = 'Create a super administrator, or reset the password of an existing account';
+    protected $description = 'Create a system administrator, or reset the password of an existing account';
 
     public function handle(): int
     {
@@ -36,7 +36,7 @@ class CreateAdmin extends Command
         }
         $label = $username ?? $email;
 
-        $user = User::query()
+        $user = User::withoutGlobalScope('company')
             ->when($email, fn ($q) => $q->orWhere('email', $email))
             ->when($username, fn ($q) => $q->orWhere('username', $username))
             ->first();
@@ -53,17 +53,18 @@ class CreateAdmin extends Command
             $user->forceFill(['password_hash' => Hash::make($password), 'is_active' => true, 'must_change_password' => true])->save();
             $this->info("Password reset for {$label}.");
         } else {
-            User::create([
+            // A system administrator belongs to no company.
+            \App\Support\Tenant::run(null, fn () => User::create([
                 'email' => $email,
                 'username' => $username,
                 'password_hash' => Hash::make($password),
-                'role' => Role::SUPER_ADMIN,
+                'role' => Role::SYSTEM_ADMIN,
                 'first_name' => $this->option('first'),
                 'last_name' => $this->option('last'),
                 'is_active' => true,
                 'must_change_password' => true,
-            ]);
-            $this->info("Super administrator {$label} created.");
+            ]));
+            $this->info("System administrator {$label} created.");
         }
 
         if (! $this->option('password')) {

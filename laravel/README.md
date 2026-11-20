@@ -20,13 +20,19 @@ php artisan serve
 
 Open http://localhost:8000. `.env` expects a MySQL database called `zentrix_hr` with user `root` and no password, which is the XAMPP default. Create the database first if it does not exist.
 
-The database starts with no people. Either load the sample company below or create the first real administrator:
+The database starts with no people. Either load the sample company below or create the system administrator:
 
 ```bash
 php artisan hr:admin you@example.com
 ```
 
 That prints a temporary password, which must be changed at the first sign-in.
+
+### Several companies
+
+One installation serves several companies. Each company sees only its own staff, settings and records. The **system administrator** (created by `hr:admin`, or an existing account turned into one with `php artisan hr:system-admin <username>`) belongs to no company: they sign in to **Companies**, set up each company together with its first super administrator, and can **Open** any company to work inside it. Only the system administrator can set up or suspend a company.
+
+On Vercel, after a deploy that changes the database, call `https://<your domain>/cron/migrate` with the header `Authorization: Bearer <CRON_SECRET>`. If it stops part-way, call it again; it carries on.
 
 ## Test sign-ins
 
@@ -85,7 +91,7 @@ The `Dockerfile` builds a production image with PHP 8.2 and Apache. On every sta
    | `BIOMETRIC_DEVICE_KEY` | the key the fingerprint clock will send (optional) |
 
 6. Under **Networking**, generate a domain (or add your own). Open it; the first start takes a minute while the database is set up.
-7. Create the first administrator from the service's shell: `php artisan hr:admin you@example.com`. Do not load `DemoSeeder` on the live system.
+7. Create the system administrator from the service's shell: `php artisan hr:admin you@example.com`. Do not load `DemoSeeder` on the live system.
 
 For email notifications, also set `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_FROM_ADDRESS`. The fingerprint clock must reach `https://<your domain>/api/time/biometric/punch` over the internet.
 

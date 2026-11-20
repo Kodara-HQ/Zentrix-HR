@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ApprovalStatus;
 use App\Enums\Role;
-use App\Models\Company;
+use App\Support\Tenant;
 use App\Models\Employee;
 use App\Models\LeaveBalance;
 use App\Models\LeaveRequest;
@@ -121,7 +121,7 @@ class LeaveController extends Controller
         $this->employees->grantLeaveBalances($employee);
 
         $pdf = Pdf::loadView('pdf.leave-form', [
-            'company' => Company::query()->value('name') ?: 'Zentrix HR',
+            'company' => Tenant::name(),
             'employee' => $employee,
             'balances' => LeaveBalance::with('leaveType')->where('employee_id', $employee->id)->where('year', now()->year)->get()->sortBy('leaveType.name'),
             'types' => LeaveType::orderBy('name')->get()->filter(fn ($type) => ! $type->gender || $type->gender === $employee->gender),

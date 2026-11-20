@@ -3,9 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\AttendanceRecord;
+use App\Models\Company;
 use App\Models\Employee;
 use App\Models\ShiftAssignment;
 use App\Models\ShiftPattern;
+use App\Support\Tenant;
 use App\Support\WorkCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
@@ -18,6 +20,12 @@ class DemoAttendanceSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! Tenant::id()) {
+            Tenant::run(Company::orderBy('id')->value('id'), fn () => $this->run());
+
+            return;
+        }
+
         $day = ShiftPattern::firstOrCreate(['name' => 'General day'], ['start_time' => '08:00', 'end_time' => '17:00', 'grace_minutes' => 15, 'work_days' => [1, 2, 3, 4, 5]]);
         $warehouse = ShiftPattern::firstOrCreate(['name' => 'Warehouse morning'], ['start_time' => '07:00', 'end_time' => '15:00', 'grace_minutes' => 10, 'work_days' => [1, 2, 3, 4, 5, 6]]);
 

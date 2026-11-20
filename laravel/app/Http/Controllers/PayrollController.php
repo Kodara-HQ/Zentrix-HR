@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PayrollStatus;
-use App\Models\Company;
+use App\Support\Tenant;
 use App\Models\Employee;
 use App\Models\Loan;
 use App\Models\PayAdjustment;
@@ -139,7 +139,7 @@ class PayrollController extends Controller
 
         $period = $payslip->payrollRun->year.'-'.str_pad((string) $payslip->payrollRun->month, 2, '0', STR_PAD_LEFT);
 
-        return Pdf::loadView('pdf.payslip', ['slip' => $payslip, 'company' => Company::first()])
+        return Pdf::loadView('pdf.payslip', ['slip' => $payslip, 'company' => Tenant::company()])
             ->setPaper('a4')
             ->download("payslip-{$payslip->employee->employee_no}-{$period}.pdf");
     }

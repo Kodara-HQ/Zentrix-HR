@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
+use App\Support\Tenant;
 use App\Models\Department;
 use App\Services\Reports;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -36,7 +36,7 @@ class ReportController extends Controller
                 }
                 fclose($out);
             }, "{$file}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']),
-            'pdf' => Pdf::loadView('pdf.report', ['report' => $report, 'company' => Company::query()->value('name') ?: 'Zentrix HR', 'filters' => $filters])
+            'pdf' => Pdf::loadView('pdf.report', ['report' => $report, 'company' => Tenant::name(), 'filters' => $filters])
                 ->setPaper('a4', 'landscape')->stream("{$file}.pdf"),
             default => view('reports.index', [
                 'available' => $available, 'name' => $name, 'report' => $report, 'filters' => $filters,

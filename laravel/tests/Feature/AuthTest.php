@@ -13,6 +13,7 @@ class AuthTest extends TestCase
 
     public function test_guests_are_sent_to_sign_in(): void
     {
+        \App\Support\Tenant::forget(); // a guest is in no company
         $this->get('/')->assertRedirect('/login');
         $this->get('/login')->assertOk()->assertSee('Zentrix HR')->assertSee('Sign in to your HR workspace.')->assertSee('Username or work email');
     }

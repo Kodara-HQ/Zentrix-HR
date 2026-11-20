@@ -18,6 +18,7 @@ use App\Models\PayrollComponent;
 use App\Models\User;
 use App\Models\WorkLocation;
 use App\Services\EmployeeService;
+use App\Support\Tenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -35,6 +36,12 @@ class DemoSeeder extends Seeder
     {
         $this->call(ReferenceDataSeeder::class);
 
+        // The demo staff go into the first company.
+        Tenant::run(Company::orderBy('id')->value('id'), fn () => $this->fill($employees));
+    }
+
+    private function fill(EmployeeService $employees): void
+    {
         // A test administrator that is not tied to a staff record (sign in as "test").
         User::firstOrCreate(['username' => 'test'], [
             'email' => 'test@zentrix.test', 'password_hash' => Hash::make(self::PASSWORD), 'role' => 'SUPER_ADMIN',
@@ -50,7 +57,7 @@ class DemoSeeder extends Seeder
         $today = CarbonImmutable::today();
         $birthday = fn (int $daysAhead, int $year) => $today->addDays($daysAhead)->setYear($year)->toDateString();
 
-        Company::first()->update([
+        Tenant::company()->update([
             'name' => 'Zentrix HR', 'legal_name' => 'Zentrix HR', 'tin' => 'C0012345678', 'ssnit_employer_no' => 'ER-ML-20418',
             'email' => 'hr@zentrix.gh', 'phone' => '+233 30 200 0100', 'address' => '14 Liberation Road, Airport City', 'city' => 'Accra', 'next_employee_no' => 19,
         ]);

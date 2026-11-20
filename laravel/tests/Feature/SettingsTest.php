@@ -100,7 +100,7 @@ class SettingsTest extends TestCase
         $this->actingAs($this->hr)->post('/settings/backup')->assertForbidden();
 
         $this->actingAs($admin)->post('/settings/backup')->assertSessionHas('status');
-        $file = Storage::files('backups')[0];
+        $file = Storage::files('backups/'.$this->company->id)[0];
         $this->assertArrayHasKey('employees', json_decode(Storage::get($file), true));
         $this->assertStringNotContainsString('password_hash', Storage::get($file));
         $this->actingAs($admin)->get('/settings/backup/'.basename($file))->assertOk();

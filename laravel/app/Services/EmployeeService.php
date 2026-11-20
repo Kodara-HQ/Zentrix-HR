@@ -7,6 +7,7 @@ use App\Enums\EventType;
 use App\Enums\LetterType;
 use App\Enums\Role;
 use App\Models\Company;
+use App\Support\Tenant;
 use App\Models\Contract;
 use App\Models\Employee;
 use App\Models\EmployeeEvent;
@@ -28,8 +29,8 @@ class EmployeeService
     public function nextEmployeeNo(): string
     {
         return DB::transaction(function () {
-            $company = Company::query()->lockForUpdate()->first();
-            abort_unless($company, 500, 'Company is not configured. Run php artisan db:seed.');
+            $company = Company::whereKey(Tenant::id())->lockForUpdate()->first();
+            abort_unless($company, 500, 'No company is selected.');
             $number = 'EMP-'.str_pad((string) $company->next_employee_no, 4, '0', STR_PAD_LEFT);
             $company->increment('next_employee_no');
 
@@ -97,7 +98,7 @@ class EmployeeService
             'status' => 'ACTIVE',
         ]);
 
-        $company = Company::query()->value('name') ?: 'Zentrix HR';
+        $company = Tenant::name();
         $this->letters->issue($employee, LetterType::APPOINTMENT, 'Appointment letter', $hireDate, [
             "I am pleased to confirm your appointment with {$company}. The particulars of this appointment are set out below.",
             "You will serve as {$employee->jobTitle->name} in the {$employee->department->name} department, based at {$employee->location->name}, {$employee->location->city}. Your employment begins on ".CarbonImmutable::parse($hireDate)->format('j F Y').", and your employee number is {$employeeNo}.",
