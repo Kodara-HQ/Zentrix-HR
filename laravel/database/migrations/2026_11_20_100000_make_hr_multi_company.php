@@ -53,13 +53,17 @@ return new class extends Migration
                 $column = $nullable || ! $companyId
                     ? 'company_id VARCHAR(30) '.($nullable ? 'NULL' : 'NOT NULL')
                     : 'company_id VARCHAR(30) NOT NULL DEFAULT '.DB::getPdo()->quote($companyId);
-                DB::statement("ALTER TABLE `{$table}` ADD COLUMN {$column} AFTER id, ADD INDEX `{$table}_company_id_index` (company_id)");
+                // TiDB cannot index a column in the statement that adds it, so these are separate steps.
+                DB::statement("ALTER TABLE `{$table}` ADD COLUMN {$column} AFTER id");
                 if ($nullable && $companyId) {
                     DB::table($table)->whereNull('company_id')->update(['company_id' => $companyId]);
                 }
                 if (! $nullable && $companyId) {
                     DB::statement("ALTER TABLE `{$table}` ALTER COLUMN company_id DROP DEFAULT");
                 }
+            }
+            if (! $this->hasIndex($table, "{$table}_company_id_index")) {
+                DB::statement("ALTER TABLE `{$table}` ADD INDEX `{$table}_company_id_index` (company_id)");
             }
 
             foreach (self::UNIQUES[$table] ?? [] as $columns) {
